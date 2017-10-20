@@ -14,7 +14,7 @@ public class detectEdge {
         ImageUtility iu = new ImageUtility();
         calculate cal = new calculate();
         File f = new File(
-                "C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\monoShiro.png");
+                "C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\monoNaru.png");
         BufferedImage read = ImageIO.read(f);
         int w = read.getWidth(), h = read.getHeight();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
@@ -27,7 +27,14 @@ public class detectEdge {
         //cal.test(f);
         //cal.monoGaussianFilter(f);
         //cal.firstX(read);
-        cal.convo(f);
+        //int ro = 1;
+        //double[][] filter = cal.Gfilter(ro);
+        //write = cal.convo(f, filter);
+        //File f2 = new File("imgTest3.png");
+        //ImageIO.write(write, "png", f2);
+        //cal.canny1(f);
+        cal.specifyPosition(1, 1);
+
         /*
         for (int i = 0; i < rgbList.size(); i++) {
             if (i % 4 == 0) {
@@ -36,6 +43,7 @@ public class detectEdge {
             System.out.print(" " + i + ":" + rgbList.get(i));
         }
         */
+        /*
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 int c = read.getRGB(x, y);
@@ -46,10 +54,11 @@ public class detectEdge {
                 write.setRGB(x, y, rgb);
                 // System.out.print("(" + x + ", " + y + ") = " + rgb + "\n");
             }
-
+        
             File f2 = new File("imgTest.png");
             ImageIO.write(write, "png", f2);
         }
+        */
 
     }
 
