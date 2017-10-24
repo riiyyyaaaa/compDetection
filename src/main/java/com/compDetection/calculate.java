@@ -14,7 +14,7 @@ public class calculate {
     /**
      * ガウシアンフィルタの生成
      */
-    public static double[][] Gfilter(int ro) {
+    public static double[][] Gfilter(double ro) {
         int n = 5; //フィルタのサイズ
         double[][] filter = new double[n][n];
 
@@ -35,8 +35,8 @@ public class calculate {
     /**
      * フィルタと画像の畳み込み計算, BufferedImageを返却(グレースケール画像)
      */
-    public static BufferedImage convo(File file, double[][] filter) throws IOException {
-        BufferedImage read = ImageIO.read(file);
+    public static BufferedImage convo(BufferedImage read, double[][] filter) throws IOException {
+        //BufferedImage read = ImageIO.read(file);
         int cal = 0;
         //int ro = 1; //σの値、自分で変える。
         int w = read.getWidth(), h = read.getHeight();
@@ -93,20 +93,34 @@ public class calculate {
      * 位置とエッジ方向を最近傍法によって
      * 推定された位置を返す
      */
-    public static int[] specifyPosition(int x1, int y1) {
-        int[] pos = { 0, 0 };
+    public static int[][] specifyPosition(int x1, int y1) {
+        int[][] pos = { { 0, 0 }, { 0, 0 } };
         double rad = Math.atan(y1 / x1); //エッジ方向
-        double x2 = x1 + Math.cos(rad); //計算から得たエッジ方向が指すx座標
-        double y2 = y1 + Math.sin(rad); //計算から得たエッジ方向が指すy座標
+        double x2 = x1 + Math.cos(rad); //計算から得たエッジ方向が指すx座標の垂直方向
+        double y2 = y1 + Math.sin(rad); //計算から得たエッジ方向が指すy座標の垂直方向
         System.out.printf("%.3f,%.3f\n", x2, y2);
+
         //ガウス記号的な処理
         x2 = Math.floor(x2 + 0.5);
         y2 = Math.floor(y2 + 0.5);
         System.out.printf("%.3f,%.3f\n", x2, y2);
-        pos[0] = (int) x2;
-        pos[1] = (int) y2;
+        pos[0][0] = (int) x2;
+        pos[0][1] = (int) y2;
 
-        System.out.printf("%d,%d", pos[0], pos[1]);
+        System.out.printf("%d,%d\n\n", pos[0][0], pos[0][1]);
+
+        x2 = x1 + Math.cos(rad + Math.PI); //計算から得たエッジ方向(-)が指すx座標の垂直方向
+        y2 = y1 + Math.sin(rad + Math.PI); //計算から得たエッジ方向(-)が指すy座標の垂直方向
+        System.out.printf("%.3f,%.3f\n", x2, y2);
+
+        //ガウス記号的な処理
+        x2 = Math.floor(x2 + 0.5);
+        y2 = Math.floor(y2 + 0.5);
+        System.out.printf("%.3f,%.3f\n", x2, y2);
+        pos[1][0] = (int) x2;
+        pos[1][1] = (int) y2;
+
+        System.out.printf("%d,%d", pos[1][0], pos[1][1]);
 
         return pos;
     }
@@ -116,36 +130,208 @@ public class calculate {
      * エッジ強度と方向を計算。場合分けによって最大エッジ強度を求める
      * BUufferedImageを返却(引数はXYそれぞれの方向に一次微分したガウシアンフィルタと画像を畳み込んだもの)
      */
-    public static BufferedImage Saisen(BufferedImage readX, BufferedImage readY) throws IOException {
-        int cal = 0;
+    public static BufferedImage Saisen(BufferedImage readX, BufferedImage readY, BufferedImage read)
+            throws IOException {
+
         int w = readX.getWidth(), h = readX.getHeight();
         int cx = 0, cy = 0;
-        double rx = 0, ry = 0, edgeSize = 0;
+        int[][] pos = new int[2][2];
+        double rx = 0, ry = 0;
+        double edgeSize = 0;
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         ImageUtility iu = new ImageUtility();
+        int count = 0;
 
         for (int i = 1; i < h - 1; i++) {
             for (int j = 1; j < w - 1; j++) {
-                cx = readX.getRGB(i, j);
-                cy = readY.getRGB(i, j);
+                cx = readX.getRGB(j, i);
+                System.out.println("width =" + w + "hight" + h);
+                cy = readY.getRGB(j, i);
                 rx = iu.r(cx);
                 ry = iu.r(cy);
 
+                //オリジナルの座標におけるエッジ強度
                 edgeSize = Math.sqrt(rx * rx + ry * ry);
-                //最近傍法によってエッジ方向のピクセル、エッジ強度を取得
+                //最近傍法によってエッジ方向のピクセル座標を取得
+                pos = specifyPosition(j, i);
+                int c1 = read.getRGB(pos[0][0], pos[0][1]);
+                int c2 = read.getRGB(pos[1][0], pos[1][0]);
+                //int cx1 = readX.getRGB(pos[0][0], pos[0][1]);
+                //int cy1 = readY.getRGB(pos[0][0], pos[0][1]);
+                //int cx2 = readX.getRGB(pos[1][0], pos[1][1]);
+                //int cy2 = readY.getRGB(pos[1][0], pos[1][1]);
+
+                //それぞれのエッジ強度を計算
+                //edgeSize[1] = Math.sqrt(cx1 * cx1 + cy1 * cy1);
+                //edgeSize[2] = Math.sqrt(cx2 * cx2 + cy2 * cy2);
+
+                //細線化
+                if (edgeSize >= c1 && edgeSize >= c2) {
+                    if (edgeSize > 255) {
+                        edgeSize = 255;
+                    } else if (edgeSize < 0) {
+                        edgeSize = 0;
+                    }
+                } else {
+                    count++;
+                    System.out.println("OKOK: " + count);
+                    edgeSize = 0;
+                }
+
+                int rgb = iu.rgb((int) edgeSize, (int) edgeSize, (int) edgeSize);
+                write.setRGB(j, i, rgb);
 
             }
+            File f2 = new File("saisenLENA.jpg");
+            ImageIO.write(write, "jpg", f2);
+            System.out.println("\ncount! is!:" + count);
         }
 
         return write;
     }
 
-    //cannyエッジ検出
+    /**
+    * 画像の細線化を行う
+    * エッジ強度と方向を計算。場合分けによって最大エッジ強度を求める
+    * BUufferedImageを返却(引数はXYそれぞれの方向に一次微分したガウシアンフィルタと画像を畳み込んだもの)
+    */
+    public static BufferedImage Saisen2(BufferedImage readX, BufferedImage readY) throws IOException {
 
+        int w = readX.getWidth(), h = readX.getHeight();
+        int cx = 0, cy = 0;
+        int[][] pos = new int[2][2];
+        double rx = 0, ry = 0;
+        double[] edgeSize = { 0, 0, 0 };
+        BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        ImageUtility iu = new ImageUtility();
+        int count[] = { 0, 0, 0 }; //細線化したピクセル数、元から0だったピクセル数、エッジになったピクセル数(全然違うけど雰囲気)
+        double[] einsetuEdgeSize = { 0, 0, 0, 0, 0 }; //隣接4方向のエッジ強度
+
+        for (int i = 1; i < h - 1; i++) {
+            for (int j = 1; j < w - 1; j++) {
+                cx = readX.getRGB(j, i);
+                System.out.println("width =" + w + "hight" + h);
+                cy = readY.getRGB(j, i);
+                rx = iu.r(cx);
+                ry = iu.r(cy);
+
+                //オリジナルの座標におけるエッジ強度
+                edgeSize[0] = Math.sqrt(rx * rx + ry * ry);
+                //最近傍法によってエッジ方向のピクセル座標を取得
+                pos = specifyPosition(j, i);
+                int cx1 = readX.getRGB(pos[0][0], pos[0][1]); //1つめの座標のx方向微分のRGB値
+                int cy1 = readY.getRGB(pos[0][0], pos[0][1]); //1つめの座標のy方向微分のRGB値
+                int cx2 = readX.getRGB(pos[1][0], pos[1][1]); //2つめの座標のx方向微分のRGB値
+                int cy2 = readY.getRGB(pos[1][0], pos[1][1]); //2つめの座標のx方向微分のRGB値
+
+                //それぞれのエッジ強度を計算
+                edgeSize[1] = Math.sqrt(cx1 * cx1 + cy1 * cy1);
+                edgeSize[2] = Math.sqrt(cx2 * cx2 + cy2 * cy2);
+
+                //細線化
+                if (edgeSize[0] <= edgeSize[1] && edgeSize[0] <= edgeSize[2]) {
+                    if (edgeSize[0] > 255) {
+                        edgeSize[0] = 255;
+                        count[2]++;
+                    } else if (edgeSize[0] <= 0) {
+                        edgeSize[0] = 0;
+                        count[1]++;
+                    } else {
+                        count[2]++;
+                    }
+                } else {
+                    count[0]++;
+                    System.out.println("\n\nOKOK: " + count[0]);
+                    edgeSize[0] = 0;
+                }
+
+                int rgb = iu.rgb((int) edgeSize[0], (int) edgeSize[0], (int) edgeSize[0]);
+                write.setRGB(j, i, rgb);
+
+            }
+            File f2 = new File("saisen2Lena.jpg");
+            ImageIO.write(write, "jpg", f2);
+            System.out.println("\nsaisenC=0 is:" + count[0] + ", oriC=0 is: " + count[1] + ", not C=0 is:" + count[2]);
+        }
+
+        return write;
+    }
+
+    /**
+     * ヒステリシス閾値処理
+     * ある位置でのエッジ強度が上限以上であればエッジ、
+     * 下限以下であれば非エッジ、中間の場合
+     * その位置がエッジとして検出された画素に4隣接(8隣接)している時だけエッジとする
+     */
+    public static boolean hysteresis(double edgeSize[]) {
+        double up = 100, down = 50; //上限値、下限値
+        //double[] edgeSize = { 0, 0, 0, 0, 0 }; //画素に4隣接しているエッジの大きさ各々
+
+        if (edgeSize[0] >= up) {
+            return true;
+        } else if (edgeSize[0] <= down) {
+            return false;
+        } else {
+            if (edgeSize[0] >= edgeSize[1] && edgeSize[0] >= edgeSize[2] && edgeSize[0] >= edgeSize[3]
+                    && edgeSize[0] >= edgeSize[4]) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * ２つの画像の差分
+     */
+    public static BufferedImage sabun(BufferedImage readX, BufferedImage readY) throws IOException {
+        int w = readX.getWidth(), h = readX.getHeight();
+        BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        ImageUtility iu = new ImageUtility();
+        int cx = 0, cy = 0, rx = 0, ry = 0;
+        double val = 0;
+
+        for (int i = 1; i < h; i++) {
+            for (int j = 1; j < w; j++) {
+                cx = readX.getRGB(j, i);
+                System.out.println("width =" + w + "hight" + h);
+                cy = readY.getRGB(j, i);
+                rx = iu.r(cx);
+                ry = iu.r(cy);
+
+                if (rx - ry < 0) {
+                    val = ry - rx;
+                } else {
+                    val = rx - ry;
+                }
+
+                // val = Math.sqrt(rx * rx + ry * ry);
+
+                if (val > 255) {
+                    val = 255;
+                } else if (val < 0) {
+                    val = 0;
+                }
+
+                int rgb = iu.rgb((int) val, (int) val, (int) val);
+                write.setRGB(j, i, rgb);
+
+            }
+            File f2 = new File("sabun2Lena.jpg");
+            ImageIO.write(write, "jpg", f2);
+
+        }
+
+        return write;
+    }
+
+    /**
+     * cannyエッジ検出
+     */
     public static void canny1(File file) throws IOException {
         BufferedImage read = ImageIO.read(file);
         int cal = 0;
-        int ro = 1; //σの値、自分で変える。
+        double ro = 1; //σの値、自分で変える。
         int w = read.getWidth(), h = read.getHeight();
         double edgeSize = 0.0; //エッジの大きさ
         double angle = 0.0; //ベクトルの角度
@@ -158,50 +344,57 @@ public class calculate {
         System.out.println("+++++++++++FILTER++++++++++");
         //ガウシアンフィルタの生成
         double filter[][] = Gfilter(ro);
-        double filterX[][] = new double[filter.length - 1][filter.length - 1]; //x方向に一次微分したガウシアンフィルタ
-        double filterY[][] = new double[filter.length - 1][filter.length - 1]; //y方向に一次微分したガウシアンフィルタ
+        //double filterX[][] = new double[filter.length - 1][filter.length - 1]; //x方向に一次微分したガウシアンフィルタ
+        double filterY[][] = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
+        double filterX[][] = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+        //double filterY[][] = new double[filter.length - 1][filter.length - 1]; //y方向に一次微分したガウシアンフィルタ
 
         //ガウシアンフィルタと元画像畳み込み
-        //writeF = convo(file, filter);
-        //File fDelx = new File("Gaugau.jpg");
-        //ImageIO.write(writeF, "jpg", fDelx);
+        writeF = convo(read, filter);
+        File f = new File("lenaGau.jpg");
+        ImageIO.write(writeF, "jpg", f);
 
         //ガウシアンフィルタをｘ方向に一次微分: Gx(画面の明度をかなり上げないと見えない)
+        /*
         for (int y = 0; y < filter.length - 1; y++) {
-
+        
             for (int x = 0; x < filter.length - 1; x++) {
-
+        
                 filterX[y][x] = -filter[y][x + 1] + filter[y][x];
                 System.out.printf("%.3f", filterX[x][y]);
             }
             System.out.print("\n");
         }
-
+        
         //ガウシアンフィルタをy方向に一次微分: Gy
         for (int y = 0; y < filter.length - 1; y++) {
-
+        
             for (int x = 0; x < filter.length - 1; x++) {
-
+        
                 filterY[y][x] = -filter[y + 1][x] + filter[y][x];
                 System.out.printf(" %.3f", filterY[x][y]);
             }
             System.out.print("\n");
         }
+        */
 
         //一次微分したx方向ガウシアンフィルタと元画像の畳み込み: ΔFx(x,y)
-        writeDelFx = convo(file, filterX);
+        writeDelFx = convo(writeF, filterX);
         File fDelx = new File("DelFx.jpg");
         ImageIO.write(writeDelFx, "jpg", fDelx);
 
         //一次微分したy方向ガウシアンフィルタと元画像の畳み込み: ΔFy(x,y)
-        writeDelFy = convo(file, filterY);
+        writeDelFy = convo(writeF, filterY);
         File fDely = new File("DelFy.jpg");
         ImageIO.write(writeDelFy, "jpg", fDely);
 
         System.out.println("+++++++++++finish!!!++++++++++");
-        //エッジ細線化
 
-        //
+        //差分
+        //sabun(writeDelFx, writeDelFy);
+        //エッジ細線化
+        Saisen2(writeDelFx, writeDelFy);
+        //Saisen(writeDelFx, writeDelFy, sabun(writeDelFx, writeDelFy));
 
         //File f2 = new File("convo.jpg");
         //ImageIO.write(writeDelFx, "jpg", f2);
@@ -322,7 +515,7 @@ public class calculate {
             }
         }
         // イメージをファイルに出力する
-        ImageIO.write(writeImage, "png", new File("monoNaru.png"));
+        ImageIO.write(writeImage, "png", new File("lena.png"));
     }
 
     static BufferedImage toMono(BufferedImage src) {

@@ -13,8 +13,7 @@ public class detectEdge {
 
         ImageUtility iu = new ImageUtility();
         calculate cal = new calculate();
-        File f = new File(
-                "C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\monoNaru.png");
+        File f = new File("C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\lena.png");
         BufferedImage read = ImageIO.read(f);
         int w = read.getWidth(), h = read.getHeight();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
@@ -32,8 +31,8 @@ public class detectEdge {
         //write = cal.convo(f, filter);
         //File f2 = new File("imgTest3.png");
         //ImageIO.write(write, "png", f2);
-        //cal.canny1(f);
-        cal.specifyPosition(1, 1);
+        cal.canny1(f);
+        //cal.specifyPosition(1, 1);
 
         /*
         for (int i = 0; i < rgbList.size(); i++) {
