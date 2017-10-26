@@ -81,10 +81,10 @@ public class calculate {
      * x方向、y方向それぞれに一次微分した変換後画像の値が引数
      * エッジ強度を計算
      */
-    public static double calEdge(int x, int y) {
+    public static double calEdge(int rx, int ry) {
         double edgeSize = 0;
 
-        edgeSize = Math.sqrt(x * x + y * y);
+        edgeSize = Math.sqrt(rx * rx + ry * ry);
 
         return edgeSize;
     }
@@ -96,6 +96,7 @@ public class calculate {
     public static int[][] specifyPosition(int x1, int y1) {
         int[][] pos = { { 0, 0 }, { 0, 0 } };
         double rad = Math.atan(y1 / x1); //エッジ方向
+        /*
         if (rad >= Math.PI) {
             rad -= Math.PI;
         }
@@ -120,35 +121,35 @@ public class calculate {
             pos[0][1] = y1 + 1;
             pos[1][1] = y1 - 1;
         }
+        */
 
-        /*
         double x2 = x1 + Math.cos(rad); //計算から得たエッジ方向が指すx座標の垂直方向
         double y2 = y1 + Math.sin(rad); //計算から得たエッジ方向が指すy座標の垂直方向
-        
+
         System.out.printf("%.3f,%.3f\n", x2, y2);
-        
+
         //ガウス記号的な処理
         x2 = Math.floor(x2 + 0.5);
         y2 = Math.floor(y2 + 0.5);
         System.out.printf("%.3f,%.3f\n", x2, y2);
         pos[0][0] = (int) x2;
         pos[0][1] = (int) y2;
-        
+
         System.out.printf("%d,%d\n\n", pos[0][0], pos[0][1]);
-        
+
         x2 = x1 + Math.cos(rad + Math.PI); //計算から得たエッジ方向(-)が指すx座標の垂直方向
         y2 = y1 + Math.sin(rad + Math.PI); //計算から得たエッジ方向(-)が指すy座標の垂直方向
         System.out.printf("%.3f,%.3f\n", x2, y2);
-        
+
         //ガウス記号的な処理
         x2 = Math.floor(x2 + 0.5);
         y2 = Math.floor(y2 + 0.5);
         System.out.printf("%.3f,%.3f\n", x2, y2);
         pos[1][0] = (int) x2;
         pos[1][1] = (int) y2;
-        
+
         System.out.printf("%d,%d", pos[1][0], pos[1][1]);
-        */
+
         return pos;
     }
 
@@ -162,13 +163,12 @@ public class calculate {
         int w = readX.getWidth(), h = readX.getHeight();
         int cx = 0, cy = 0;
         int[][] pos = new int[2][2];
-        double rx = 0, ry = 0;
+        int rx = 0, ry = 0;
         double[] edgeSize = { 0, 0, 0 };
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         ImageUtility iu = new ImageUtility();
         int count2 = 0;
         int count[] = { 0, 0, 0 }; //細線化したピクセル数、元から0だったピクセル数、エッジになったピクセル数(全然違うけど雰囲気)
-        double[] rinsetuEdgeSize = { 0, 0, 0, 0, 0 }; //隣接4方向のエッジ強度
 
         for (int y = 1; y < h - 1; y++) {
             for (int x = 1; x < w - 1; x++) {
@@ -181,6 +181,7 @@ public class calculate {
 
                 //現在座標におけるエッジ強度
                 edgeSize[0] = Math.sqrt(rx * rx + ry * ry);
+
                 //最近傍法によってエッジ方向のピクセル座標を取得
                 pos = specifyPosition(x, y);
 
@@ -194,11 +195,6 @@ public class calculate {
                 edgeSize[1] = Math.sqrt(cx1 * cx1 + cy1 * cy1);
                 edgeSize[2] = Math.sqrt(cx2 * cx2 + cy2 * cy2);
                 //System.out.println("edgeSize:" + edgeSize[0] + ", edgeSize1:" + edgeSize[1] + ", edgeSize2:" + edgeSize[2]);
-
-                //ヒステリシスのためのエッジ強度計算
-                //    for (int k = 0; k < 4; k++) {
-
-                //  }
 
                 //細線化
                 if (edgeSize[0] >= edgeSize[1] && edgeSize[0] >= edgeSize[2]) {
@@ -236,25 +232,48 @@ public class calculate {
      * 下限以下であれば非エッジ、中間の場合
      * その位置がエッジとして検出された画素に4隣接(8隣接)している時だけエッジとする
      */
-    public static boolean hysteresis(double edgeSize[]) {
-        double up = 100, down = 50; //上限値、下限値
-        //double[] edgeSize = { 0, 0, 0, 0, 0 }; //画素に4隣接しているエッジの大きさ各々
+    public static BufferedImage hysteresis(BufferedImage read, double up, double down) throws IOException {
+        //double up = 100, down = 50; //上限値、下限値
+        int w = read.getWidth(), h = read.getHeight();
+        ImageUtility iu = new ImageUtility();
+        BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        double[] size = { 0, 0, 0, 0, 0 }; //隣接4方向のエッジ強度
 
-        //上側より大きい
-        if (edgeSize[0] >= up) {
-            return true;
-            //下側より小さい
-        } else if (edgeSize[0] <= down) {
-            return false;
-        } else {
-            //中間
-            if (edgeSize[0] >= edgeSize[1] && edgeSize[0] >= edgeSize[2] && edgeSize[0] >= edgeSize[3]
-                    && edgeSize[0] >= edgeSize[4]) {
-                return true;
-            } else {
-                return false;
+        for (int y = 1; y < h - 1; y++) {
+            for (int x = 1; x < w - 1; x++) {
+                //ヒステリシスのためのエッジ強度計算
+                size[0] = iu.r(read.getRGB(x, y));
+                size[1] = iu.r(read.getRGB(x, y - 1));
+                size[2] = iu.r(read.getRGB(x - 1, y));
+                size[3] = iu.r(read.getRGB(x + 1, y));
+                size[4] = iu.r(read.getRGB(x, y + 1));
+
+                //上側より大きい
+                if (size[0] >= up) {
+                    System.out.println("up");
+                    //下側より小さい
+                } else if (size[0] <= down) {
+                    System.out.println("down");
+                    size[0] = 0;
+                } else {
+                    //中間
+                    if (size[0] >= size[1] && size[0] >= size[2] && size[0] >= size[3] && size[0] >= size[4]) {
+                        System.out.println("edge");
+                    } else {
+                        size[0] = 0;
+                        System.out.println("not edge");
+                    }
+                }
+                int rgb = iu.rgb((int) size[0], (int) size[0], (int) size[0]);
+                write.setRGB(x, y, rgb);
+
             }
+            File f2 = new File("hysLena.jpg");
+            ImageIO.write(write, "jpg", f2);
+
         }
+        return write;
+
     }
 
     /**
@@ -325,8 +344,11 @@ public class calculate {
         //差分
         //sabun(writeDelFx, writeDelFy);
         //エッジ細線化
-        Saisen2(writeDelFx, writeDelFy);
+
         //Saisen(writeDelFx, writeDelFy, sabun(writeDelFx, writeDelFy));
+
+        //ヒステリシス処理
+        hysteresis(Saisen2(writeDelFx, writeDelFy), 150, 100);
 
         //File f2 = new File("convo.jpg");
         //ImageIO.write(writeDelFx, "jpg", f2);
@@ -447,7 +469,7 @@ public class calculate {
             }
         }
         // イメージをファイルに出力する
-        ImageIO.write(writeImage, "png", new File("lena.png"));
+        ImageIO.write(writeImage, "png", new File("monoNaru.png"));
     }
 
     static BufferedImage toMono(BufferedImage src) {

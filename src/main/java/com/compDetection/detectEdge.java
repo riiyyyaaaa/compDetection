@@ -13,7 +13,7 @@ public class detectEdge {
 
         ImageUtility iu = new ImageUtility();
         calculate cal = new calculate();
-        File f = new File("C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\lena.png");
+        File f = new File("C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\mono4.png");
         BufferedImage read = ImageIO.read(f);
         int w = read.getWidth(), h = read.getHeight();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);

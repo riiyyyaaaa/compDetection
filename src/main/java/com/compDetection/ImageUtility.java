@@ -5,7 +5,9 @@ import java.io.*;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
-import java.awt.Image;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
+import java.awt.image.AreaAveragingScaleFilter;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
@@ -45,6 +47,21 @@ public class ImageUtility {
         //s BufferedImage destImage = resizeImage(read, scale);
     }
 
+    /*
+    public static void scaleImage(File in, File out, double scale) throws IOException {
+        BufferedImage org = ImageIO.read(in);
+        ImageFilter filter = new AreaAveragingScaleFilter((int) (org.getWidth() * scale),
+                (int) (org.getHeight() * scale));
+        ImageProducer p = new FilteredImageSource(org.getSource(), filter);
+        java.awt.Image dstImage = Toolkit.getDefaultToolkit().createImage(p);
+        BufferedImage dst = new BufferedImage(dstImage.getWidth(null), dstImage.getHeight(null),
+                BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = dst.createGraphics();
+        g.drawImage(dstImage, 0, 0, null);
+        g.dispose();
+        ImageIO.write(dst, "jpeg", out);
+    }
+    */
     public static void main(String[] args) {
 
     }
