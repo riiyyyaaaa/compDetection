@@ -5,7 +5,7 @@ package com.compDetection;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
-
+import javax.swing.JFileChooser;
 import javax.imageio.ImageIO;
 
 public class detectEdge {
@@ -13,17 +13,23 @@ public class detectEdge {
 
         ImageUtility iu = new ImageUtility();
         calculate cal = new calculate();
-        File f = new File("C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\mono4.png");
+        //File f = new File("C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\4.jpg");
+        File f = new File("./867.jpg");
+        JFileChooser filechooser = new JFileChooser();
+        String filename = filechooser.getName(f);
         BufferedImage read = ImageIO.read(f);
         int w = read.getWidth(), h = read.getHeight();
-        BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        //ArrayList<Integer> rgbList = cal.firstX(read);
 
-        //cal.Mono(f);
+
+        if(w*h>80000){
+          System.out.println("w, h, w*h, scale:" + w + ", " + h + ", " + w*h + "," + (double)80000/(h*w));
+          f = iu.scaleImage(f,(double)80000/(h*w));
+          System.out.println("\n\n\nResize!\n\n\n");
+        }
+
+
         //cal.GaussianFilter();
         // Convolution con = new Convolution();
-        //con.init();
-        //cal.test(f);
         //cal.monoGaussianFilter(f);
         //cal.firstX(read);
         //int ro = 1;
@@ -31,7 +37,7 @@ public class detectEdge {
         //write = cal.convo(f, filter);
         //File f2 = new File("imgTest3.png");
         //ImageIO.write(write, "png", f2);
-        cal.canny1(f);
+        cal.canny(cal.Mono(f), 1, 100, 50);
         //cal.specifyPosition(1, 1);
 
         /*
@@ -53,7 +59,7 @@ public class detectEdge {
                 write.setRGB(x, y, rgb);
                 // System.out.print("(" + x + ", " + y + ") = " + rgb + "\n");
             }
-        
+
             File f2 = new File("imgTest.png");
             ImageIO.write(write, "png", f2);
         }

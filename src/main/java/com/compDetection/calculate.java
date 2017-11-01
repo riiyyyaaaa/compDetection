@@ -3,12 +3,75 @@ package com.compDetection;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
-
 import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
 
 public class calculate {
     public static void main() {
 
+    }
+    /**
+     * cannyエッジ検出
+     */
+    public static void canny(File file,double ro, double up, double down) throws IOException {
+        BufferedImage read = ImageIO.read(file);
+        int cal = 0;
+        int w = read.getWidth(), h = read.getHeight();
+        double edgeSize = 0.0; //エッジの大きさ
+        double angle = 0.0; //ベクトルの角度
+        ArrayList rgbList = new ArrayList<Integer>();
+        BufferedImage writeDelFx = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        BufferedImage writeDelFy = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        BufferedImage writeF = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        ImageUtility iu = new ImageUtility();
+        JFileChooser filechooser = new JFileChooser();
+        String filename = filechooser.getName(file);
+
+        System.out.println("+++++++++++FILTER++++++++++");
+        //ガウシアンフィルタの生成
+        double filter[][] = Gfilter(ro);
+        //double filterX[][] = new double[filter.length - 1][filter.length - 1]; //x方向に一次微分したガウシアンフィルタ
+        double filterX[][] = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
+        double filterY[][] = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+        //double filterY[][] = new double[filter.length - 1][filter.length - 1]; //y方向に一次微分したガウシアンフィルタ
+        double pFilterX[][] = {{-1, 0, 1}, {-1, 0, 1}, {-1, 0, 1}};
+        double pFilterY[][] = {{-1, -1, -1}, {0, 0, 0}, {1, 1, 1}};
+
+        //ガウシアンフィルタと元画像畳み込み
+        writeF = convo(read, filter);
+        File f = new File("Gau" + filename);
+        ImageIO.write(writeF, "jpg", f);
+
+        //一次微分したx方向ガウシアンフィルタと元画像の畳み込み: ΔFx(x,y)
+        writeDelFx = convo(writeF, pFilterX);
+        File fDelx = new File("DelFx.jpg");
+        ImageIO.write(writeDelFx, "jpg", fDelx);
+
+        //一次微分したy方向ガウシアンフィルタと元画像の畳み込み: ΔFy(x,y)
+        writeDelFy = convo(writeF, pFilterY);
+        File fDely = new File("DelFy.jpg");
+        ImageIO.write(writeDelFy, "jpg", fDely);
+
+        System.out.println("+++++++++++finish!!!++++++++++");
+
+        //差分
+        sabun(writeDelFx, writeDelFy);
+        //エッジ細線化
+
+        //Saisen(writeDelFx, writeDelFy, sabun(writeDelFx, writeDelFy));
+
+        //ヒステリシス処理
+        writeF = Saisen2(writeDelFx,writeDelFy);
+        File f2 = new File("saisen" + filename);
+        ImageIO.write(writeF,"jpg", f2);
+
+        writeF = hysteresis(writeF, up, down);
+        int r = (int)ro;
+        int u = (int)up;
+        int d = (int)down;
+        f2 = new File(String.valueOf(r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) +"_" + filename);
+        ImageIO.write(writeF,"jpg", f2);
+        histgram(f2);
     }
 
     /**
@@ -217,8 +280,8 @@ public class calculate {
                 write.setRGB(x, y, rgb);
 
             }
-            File f2 = new File("saisen2Lena.jpg");
-            ImageIO.write(write, "jpg", f2);
+            //File f2 = new File("saisen2Lena.jpg");
+            //ImageIO.write(write, "jpg", f2);
             System.out.println("\n\ncount: " + count2);
             System.out.println("\nsaisenC=0 is:" + count[0] + ", oriC=0 is: " + count[1] + ", not C=0 is:" + count[2]);
         }
@@ -237,16 +300,21 @@ public class calculate {
         int w = read.getWidth(), h = read.getHeight();
         ImageUtility iu = new ImageUtility();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        double[] size = { 0, 0, 0, 0, 0 }; //隣接4方向のエッジ強度
+        double[] size = new double[9]; //隣接4方向のエッジ強度
+        boolean judge = true;
 
         for (int y = 1; y < h - 1; y++) {
             for (int x = 1; x < w - 1; x++) {
                 //ヒステリシスのためのエッジ強度計算
                 size[0] = iu.r(read.getRGB(x, y));
-                size[1] = iu.r(read.getRGB(x, y - 1));
-                size[2] = iu.r(read.getRGB(x - 1, y));
-                size[3] = iu.r(read.getRGB(x + 1, y));
-                size[4] = iu.r(read.getRGB(x, y + 1));
+                size[1] = iu.r(read.getRGB(x - 1, y - 1));
+                size[2] = iu.r(read.getRGB(x, y - 1));
+                size[3] = iu.r(read.getRGB(x + 1, y - 1));
+                size[4] = iu.r(read.getRGB(x - 1, y));
+                size[5] = iu.r(read.getRGB(x + 1, y));
+                size[6] = iu.r(read.getRGB(x - 1, y + 1));
+                size[7] = iu.r(read.getRGB(x, y + 1));
+                size[8] = iu.r(read.getRGB(x + 1, y + 1));
 
                 //上側より大きい
                 if (size[0] >= up) {
@@ -257,7 +325,15 @@ public class calculate {
                     size[0] = 0;
                 } else {
                     //中間
-                    if (size[0] >= size[1] && size[0] >= size[2] && size[0] >= size[3] && size[0] >= size[4]) {
+                    for(int i =  1; i < size.length; i++){
+                      if(size[i] < size[0]){
+                        judge = true;
+                      }else{
+                        judge = false;
+                        break;
+                      }
+                    }
+                    if (judge) {
                         System.out.println("edge");
                     } else {
                         size[0] = 0;
@@ -268,90 +344,39 @@ public class calculate {
                 write.setRGB(x, y, rgb);
 
             }
-            File f2 = new File("hysLena.jpg");
-            ImageIO.write(write, "jpg", f2);
+            //File f2 = new File("hysLena.jpg");
+            //ImageIO.write(write, "jpg", f2);
 
         }
         return write;
 
     }
 
-    /**
-     * cannyエッジ検出
-     */
-    public static void canny1(File file) throws IOException {
-        BufferedImage read = ImageIO.read(file);
-        int cal = 0;
-        double ro = 1; //σの値、自分で変える。
-        int w = read.getWidth(), h = read.getHeight();
-        double edgeSize = 0.0; //エッジの大きさ
-        double angle = 0.0; //ベクトルの角度
-        ArrayList rgbList = new ArrayList<Integer>();
-        BufferedImage writeDelFx = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        BufferedImage writeDelFy = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        BufferedImage writeF = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
+    //ヒストグラムと白黒値の比
+    public static void histgram(File file) throws IOException{
+      BufferedImage read = ImageIO.read(file);
+      int w = read.getWidth();
+      int h = read.getHeight();
+      BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+      ImageUtility iu = new ImageUtility();
+      int[] his = new int[255/15];
 
-        System.out.println("+++++++++++FILTER++++++++++");
-        //ガウシアンフィルタの生成
-        double filter[][] = Gfilter(ro);
-        //double filterX[][] = new double[filter.length - 1][filter.length - 1]; //x方向に一次微分したガウシアンフィルタ
-        double filterX[][] = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
-        double filterY[][] = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
-        //double filterY[][] = new double[filter.length - 1][filter.length - 1]; //y方向に一次微分したガウシアンフィルタ
-
-        //ガウシアンフィルタと元画像畳み込み
-        writeF = convo(read, filter);
-        File f = new File("lenaGau.jpg");
-        ImageIO.write(writeF, "jpg", f);
-
-        //ガウシアンフィルタをｘ方向に一次微分: Gx(画面の明度をかなり上げないと見えない)
-        /*
-        for (int y = 0; y < filter.length - 1; y++) {
-        
-            for (int x = 0; x < filter.length - 1; x++) {
-        
-                filterX[y][x] = -filter[y][x + 1] + filter[y][x];
-                System.out.printf("%.3f", filterX[x][y]);
-            }
-            System.out.print("\n");
+      for(int y = 0; y < h; y++){
+        for(int x = 0; x < w; x++){
+          int c = iu.r(read.getRGB(x, y));
+          his[c%15] ++;
         }
-        
-        //ガウシアンフィルタをy方向に一次微分: Gy
-        for (int y = 0; y < filter.length - 1; y++) {
-        
-            for (int x = 0; x < filter.length - 1; x++) {
-        
-                filterY[y][x] = -filter[y + 1][x] + filter[y][x];
-                System.out.printf(" %.3f", filterY[x][y]);
-            }
-            System.out.print("\n");
+      }
+
+      for(int i = 0; i < 255/15; i++){
+        System.out.printf("%2d~%2d: ", i, i+15);
+
+        for(int j = 0; j < his[i].length%100; j++){
+          System.out.printf("*");
         }
-        */
+        System.out.printf(" %d\n", his[i]);
 
-        //一次微分したx方向ガウシアンフィルタと元画像の畳み込み: ΔFx(x,y)
-        writeDelFx = convo(writeF, filterX);
-        File fDelx = new File("DelFx.jpg");
-        ImageIO.write(writeDelFx, "jpg", fDelx);
-
-        //一次微分したy方向ガウシアンフィルタと元画像の畳み込み: ΔFy(x,y)
-        writeDelFy = convo(writeF, filterY);
-        File fDely = new File("DelFy.jpg");
-        ImageIO.write(writeDelFy, "jpg", fDely);
-
-        System.out.println("+++++++++++finish!!!++++++++++");
-
-        //差分
-        //sabun(writeDelFx, writeDelFy);
-        //エッジ細線化
-
-        //Saisen(writeDelFx, writeDelFy, sabun(writeDelFx, writeDelFy));
-
-        //ヒステリシス処理
-        hysteresis(Saisen2(writeDelFx, writeDelFy), 150, 100);
-
-        //File f2 = new File("convo.jpg");
-        //ImageIO.write(writeDelFx, "jpg", f2);
+      }
     }
 
     //グレースケール画像にガウシアンフィルタ
@@ -397,61 +422,9 @@ public class calculate {
         }
         File f2 = new File("tetemonogau.jpg");
         ImageIO.write(write, "jpg", f2);
-    }
+      }
 
-    //カラー画像に平滑化フィルタ
-    public static void test(File file) throws IOException {
-        BufferedImage read = ImageIO.read(file);
-        int w = read.getWidth();
-        int h = read.getHeight();
-        BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
-        //filterを指定。後で動的に変えられるようにメソッド作る
-        double[][] filter = { { 0.11f, 0.11f, 0.11f }, { 0.11f, 0.12f, 0.11f }, { 0.11f, 0.11f, 0.11f } };
-        double[][] filter2 = { { -1, -1, -1 }, { -1, 9, -1 }, { -1, -1, -1 } };
-        double[][] firstXfilter = { { 0, 0, 0 }, { 1, -2, 1 }, { 0, 0, 0 } };
-
-        double calr, calg, calb;
-
-        for (int j = 1; j < h - 1; j++) {
-            for (int i = 1; i < w - 1; i++) {
-                calr = 0;
-                calg = 0;
-                calb = 0;
-                for (int l = 0; l < 3; l++) {
-                    for (int m = 0; m < 3; m++) {
-                        int c = read.getRGB(i - 1 + m, j - 1 + l);
-                        double r = iu.r(c);
-                        //double g = iu.g(c);
-                        //double b = iu.b(c);
-                        //System.out.print(" color:" + c + " , r:" + r + ", g:" + g + ", b:" + b);
-                        //int rgb = iu.rgb(r, g, b);
-                        r *= firstXfilter[l][m];
-                        //g *= firstXfilter[l][m];
-                        //b *= firstXfilter[l][m];
-                        calr += r;
-                        System.out.print("cal:" + calr + " " + r + " ");
-                        //calg += g;
-                        //calb += b;
-                    }
-                    System.out.println();
-                }
-                System.out.println();
-                if (calr > 225) {
-                    calr = 255;
-                } else if (calr < 0) {
-                    calr = 0;
-                }
-                int rgb = iu.rgb((int) calr, (int) calr, (int) calr);
-                //System.out.print(" " + (int) rgb);
-                write.setRGB(i, j, (int) rgb);
-            }
-        }
-        File f2 = new File("firstX.jpg");
-        ImageIO.write(write, "jpg", f2);
-    }
-
-    public static void Mono(File file) throws IOException {
+    public static File Mono(File file) throws IOException {
         BufferedImage readImage = ImageIO.read(file);
         int w = readImage.getWidth(), h = readImage.getHeight();
         BufferedImage writeImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
@@ -469,7 +442,12 @@ public class calculate {
             }
         }
         // イメージをファイルに出力する
-        ImageIO.write(writeImage, "png", new File("monoNaru.png"));
+        JFileChooser jfilechooser = new JFileChooser();
+        String filename = jfilechooser.getName(file);
+        File file2 = new File("mono" + filename);
+        ImageIO.write(writeImage, "png", file2);
+
+        return file2;
     }
 
     static BufferedImage toMono(BufferedImage src) {
@@ -567,6 +545,29 @@ public class calculate {
         ImageIO.write(write, "jpg", file);
         //return rgbList;
     }
+    //ガウシアンフィルタをｘ方向に一次微分: Gx(画面の明度をかなり上げないと見えない)
+    /*
+    for (int y = 0; y < filter.length - 1; y++) {
+
+        for (int x = 0; x < filter.length - 1; x++) {
+
+            filterX[y][x] = -filter[y][x + 1] + filter[y][x];
+            System.out.printf("%.3f", filterX[x][y]);
+        }
+        System.out.print("\n");
+    }
+
+    //ガウシアンフィルタをy方向に一次微分: Gy
+    for (int y = 0; y < filter.length - 1; y++) {
+
+        for (int x = 0; x < filter.length - 1; x++) {
+
+            filterY[y][x] = -filter[y + 1][x] + filter[y][x];
+            System.out.printf(" %.3f", filterY[x][y]);
+        }
+        System.out.print("\n");
+    }
+    */
 
     /**
     * ２つの画像の差分
@@ -604,7 +605,7 @@ public class calculate {
                 write.setRGB(j, i, rgb);
 
             }
-            File f2 = new File("sabun2Lena.jpg");
+            File f2 = new File("sabun.jpg");
             ImageIO.write(write, "jpg", f2);
 
         }

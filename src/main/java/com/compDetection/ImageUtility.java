@@ -5,11 +5,15 @@ import java.io.*;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+import java.awt.image.*;
+import java.awt.Toolkit;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.awt.image.AreaAveragingScaleFilter;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
+import javax.swing.JFileChooser;
 
 public class ImageUtility {
     public static int a(int c) {
@@ -41,27 +45,24 @@ public class ImageUtility {
     }
 
     //画像を縮小
-    public static void resize(File file) throws IOException {
-        double scale = 0;
-        BufferedImage read = ImageIO.read(file);
-        //s BufferedImage destImage = resizeImage(read, scale);
-    }
-
-    /*
-    public static void scaleImage(File in, File out, double scale) throws IOException {
+    public static File scaleImage(File in, double scale) throws IOException {
+      System.out.println("scale is " + scale);
         BufferedImage org = ImageIO.read(in);
-        ImageFilter filter = new AreaAveragingScaleFilter((int) (org.getWidth() * scale),
-                (int) (org.getHeight() * scale));
+        ImageFilter filter = new AreaAveragingScaleFilter((int)(org.getWidth() * scale), (int)(org.getHeight() * scale));
+        JFileChooser filechooser = new JFileChooser();
+        String filename = filechooser.getName(in);
         ImageProducer p = new FilteredImageSource(org.getSource(), filter);
         java.awt.Image dstImage = Toolkit.getDefaultToolkit().createImage(p);
-        BufferedImage dst = new BufferedImage(dstImage.getWidth(null), dstImage.getHeight(null),
-                BufferedImage.TYPE_INT_RGB);
+        BufferedImage dst = new BufferedImage(dstImage.getWidth(null), dstImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = dst.createGraphics();
         g.drawImage(dstImage, 0, 0, null);
         g.dispose();
-        ImageIO.write(dst, "jpeg", out);
-    }
-    */
+        File out = new File(filename);
+        ImageIO.write(dst, "jpg", out);
+
+        return out;
+      }
+
     public static void main(String[] args) {
 
     }
