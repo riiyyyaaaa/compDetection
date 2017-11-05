@@ -369,11 +369,22 @@ public class calculate {
       }
 
       for(int i = 0; i < 255/15; i++){
-        System.out.printf("%2d~%2d: ", i, i+15);
+        System.out.printf("%3d~%3d: ", i * 15, i * 15 + 15);
 
-        for(int j = 0; j < his[i].length%100; j++){
-          System.out.printf("*");
+        for(int j = 0; j < 30; j++){
+          if((int)his[i]/100 > 30 && j>30){
+            System.out.printf("~");
+            break;
+          }
+          if(j < (int)his[i]/100){
+            System.out.printf("*");
+          }else{
+            System.out.printf(" ");
+          }
+
         }
+
+
         System.out.printf(" %d\n", his[i]);
 
       }

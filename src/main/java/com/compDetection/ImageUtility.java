@@ -44,15 +44,17 @@ public class ImageUtility {
         return a << 24 | r << 16 | g << 8 | b;
     }
 
-    //画像を縮小
-    public static File scaleImage(File in, double scale) throws IOException {
-      System.out.println("scale is " + scale);
+    //画像を縮小, scale で x, y のサイズ変更。x : y = 1 : 1
+    public static File scaleImage(File in, double scaleX, double scaleY) throws IOException {
+        //System.out.println("scale is " + scale);
         BufferedImage org = ImageIO.read(in);
-        ImageFilter filter = new AreaAveragingScaleFilter((int)(org.getWidth() * scale), (int)(org.getHeight() * scale));
+        ImageFilter filter = new AreaAveragingScaleFilter((int) (org.getWidth() * scaleX),
+                (int) (org.getHeight() * scaleY));
         JFileChooser filechooser = new JFileChooser();
         String filename = filechooser.getName(in);
         ImageProducer p = new FilteredImageSource(org.getSource(), filter);
         java.awt.Image dstImage = Toolkit.getDefaultToolkit().createImage(p);
+        //BufferedImage dst = new BufferedImage(dstImage.getWidth(null), dstImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
         BufferedImage dst = new BufferedImage(dstImage.getWidth(null), dstImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = dst.createGraphics();
         g.drawImage(dstImage, 0, 0, null);
@@ -61,7 +63,7 @@ public class ImageUtility {
         ImageIO.write(dst, "jpg", out);
 
         return out;
-      }
+    }
 
     public static void main(String[] args) {
 

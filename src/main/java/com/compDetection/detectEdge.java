@@ -14,17 +14,18 @@ public class detectEdge {
         ImageUtility iu = new ImageUtility();
         calculate cal = new calculate();
         //File f = new File("C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\4.jpg");
-        File f = new File("./867.jpg");
+        File f = new File("./132.jpg");
         JFileChooser filechooser = new JFileChooser();
         String filename = filechooser.getName(f);
         BufferedImage read = ImageIO.read(f);
         int w = read.getWidth(), h = read.getHeight();
 
 
-        if(w*h>80000){
-          System.out.println("w, h, w*h, scale:" + w + ", " + h + ", " + w*h + "," + (double)80000/(h*w));
-          f = iu.scaleImage(f,(double)80000/(h*w));
-          System.out.println("\n\n\nResize!\n\n\n");
+        if(w!=300 || h!=300){
+          //System.out.println("w, h, w*h, scale:" + w + ", " + h + ", " + w*h + "," + (double)80000/(h*w));
+          System.out.println("\n\n\nStart Resize\n\n\n");
+          f = iu.scaleImage(f,(double)300/w, (double)300/h);
+          System.out.println("\n\n\nFinished to Resize!\n\n\n");
         }
 
 
