@@ -77,9 +77,13 @@ public class calculate {
         }
         f2 = new File( "C:\\detectEdge\\edgetest", imagename);
         ImageIO.write(writeF,"jpg", f2);
+
+        File textfile = new File("c:\\detectEdge\\edgetext.txt");
+        FileWriter filewriter = new FileWriter(textfile, true);
+        filewriter.write( ",   " + imagename + ": " + String.valueOf(judgeHistogram(histogram(f2))));
+        filewriter.close();
         
-        judgeHistogram(histogram(f2));
-        System.out.println("");
+        System.out.println(imagename + ": " + String.valueOf(judgeHistogram(histogram(f2))));
     }
 
     /**
@@ -399,7 +403,7 @@ public class calculate {
     }
 
     //閾値、またはフィルタを変更するか否か判定
-    public static boolean judgeHistogram(int[] his){
+    public static int judgeHistogram(int[] his){
         //RGB値が大きいほど白の割合が高い
         int ratio=0;
 
@@ -409,7 +413,7 @@ public class calculate {
         
         System.out.println("white ratio: " + ratio);
         boolean judge = true;
-        return judge;
+        return ratio;
     }
 
     //グレースケール画像にガウシアンフィルタ
