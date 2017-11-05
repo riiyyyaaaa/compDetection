@@ -26,8 +26,9 @@ public class calculate {
         ImageUtility iu = new ImageUtility();
         JFileChooser filechooser = new JFileChooser();
         String filename = filechooser.getName(file);
+        String imagename;
 
-        System.out.println("+++++++++++FILTER++++++++++");
+        //System.out.println("+++++++++++FILTER++++++++++");
         //ガウシアンフィルタの生成
         double filter[][] = Gfilter(ro);
         //double filterX[][] = new double[filter.length - 1][filter.length - 1]; //x方向に一次微分したガウシアンフィルタ
@@ -52,7 +53,7 @@ public class calculate {
         File fDely = new File("DelFy.jpg");
         ImageIO.write(writeDelFy, "jpg", fDely);
 
-        System.out.println("+++++++++++finish!!!++++++++++");
+        //System.out.println("+++++++++++finish!!!++++++++++");
 
         //差分
         sabun(writeDelFx, writeDelFy);
@@ -69,9 +70,16 @@ public class calculate {
         int r = (int)ro;
         int u = (int)up;
         int d = (int)down;
-        f2 = new File(String.valueOf(r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) +"_" + filename);
+        if(ro-r>0){
+            imagename = String.valueOf(r) + "-" + String.valueOf(ro-r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) +"_" + filename;
+        }else{
+            imagename = String.valueOf(r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) +"_" + filename;
+        }
+        f2 = new File( "C:\\detectEdge\\edgetest", imagename);
         ImageIO.write(writeF,"jpg", f2);
-        histgram(f2);
+        
+        judgeHistogram(histogram(f2));
+        System.out.println("");
     }
 
     /**
@@ -86,9 +94,9 @@ public class calculate {
                 filter[(int) (i + n / 2)][(int) (j + n / 2)] = 1 / (2 * Math.PI * ro * ro)
                         * Math.exp(-(j * j + i * i) / (2 * ro * ro));
 
-                System.out.printf("%.2f,%.2f = %.3f  ", i, j, filter[(int) (i + n / 2)][(int) (j + n / 2)]);
+                //System.out.printf("%.2f,%.2f = %.3f  ", i, j, filter[(int) (i + n / 2)][(int) (j + n / 2)]);
             }
-            System.out.print("+\n");
+            //System.out.print("+\n");
         }
 
         return filter;
@@ -120,7 +128,7 @@ public class calculate {
                         int c = read.getRGB(i - 1 + l, j - 1 + k);
                         int r = iu.r(c);
                         cal += r * filter[k][l];
-                        System.out.print(" " + cal);
+                        //System.out.print(" " + cal);
                     }
                 }
                 //計算した結果が0<cal<255以外の時の処理
@@ -189,29 +197,29 @@ public class calculate {
         double x2 = x1 + Math.cos(rad); //計算から得たエッジ方向が指すx座標の垂直方向
         double y2 = y1 + Math.sin(rad); //計算から得たエッジ方向が指すy座標の垂直方向
 
-        System.out.printf("%.3f,%.3f\n", x2, y2);
+        //System.out.printf("%.3f,%.3f\n", x2, y2);
 
         //ガウス記号的な処理
         x2 = Math.floor(x2 + 0.5);
         y2 = Math.floor(y2 + 0.5);
-        System.out.printf("%.3f,%.3f\n", x2, y2);
+        //System.out.printf("%.3f,%.3f\n", x2, y2);
         pos[0][0] = (int) x2;
         pos[0][1] = (int) y2;
 
-        System.out.printf("%d,%d\n\n", pos[0][0], pos[0][1]);
+        //System.out.printf("%d,%d\n\n", pos[0][0], pos[0][1]);
 
         x2 = x1 + Math.cos(rad + Math.PI); //計算から得たエッジ方向(-)が指すx座標の垂直方向
         y2 = y1 + Math.sin(rad + Math.PI); //計算から得たエッジ方向(-)が指すy座標の垂直方向
-        System.out.printf("%.3f,%.3f\n", x2, y2);
+        //System.out.printf("%.3f,%.3f\n", x2, y2);
 
         //ガウス記号的な処理
         x2 = Math.floor(x2 + 0.5);
         y2 = Math.floor(y2 + 0.5);
-        System.out.printf("%.3f,%.3f\n", x2, y2);
+        //System.out.printf("%.3f,%.3f\n", x2, y2);
         pos[1][0] = (int) x2;
         pos[1][1] = (int) y2;
 
-        System.out.printf("%d,%d", pos[1][0], pos[1][1]);
+        //System.out.printf("%d,%d", pos[1][0], pos[1][1]);
 
         return pos;
     }
@@ -272,7 +280,7 @@ public class calculate {
                     }
                 } else {
                     count[0]++;
-                    System.out.println("\n\nOKOK: " + count[0]);
+                    //System.out.println("\n\nOKOK: " + count[0]);
                     edgeSize[0] = 0;
                 }
 
@@ -282,8 +290,8 @@ public class calculate {
             }
             //File f2 = new File("saisen2Lena.jpg");
             //ImageIO.write(write, "jpg", f2);
-            System.out.println("\n\ncount: " + count2);
-            System.out.println("\nsaisenC=0 is:" + count[0] + ", oriC=0 is: " + count[1] + ", not C=0 is:" + count[2]);
+            //System.out.println("\n\ncount: " + count2);
+            //System.out.println("\nsaisenC=0 is:" + count[0] + ", oriC=0 is: " + count[1] + ", not C=0 is:" + count[2]);
         }
 
         return write;
@@ -318,10 +326,10 @@ public class calculate {
 
                 //上側より大きい
                 if (size[0] >= up) {
-                    System.out.println("up");
+                    //System.out.println("up");
                     //下側より小さい
                 } else if (size[0] <= down) {
-                    System.out.println("down");
+                    //System.out.println("down");
                     size[0] = 0;
                 } else {
                     //中間
@@ -334,10 +342,10 @@ public class calculate {
                       }
                     }
                     if (judge) {
-                        System.out.println("edge");
+                        //System.out.println("edge");
                     } else {
                         size[0] = 0;
-                        System.out.println("not edge");
+                        //System.out.println("not edge");
                     }
                 }
                 int rgb = iu.rgb((int) size[0], (int) size[0], (int) size[0]);
@@ -353,7 +361,7 @@ public class calculate {
     }
 
     //ヒストグラムと白黒値の比
-    public static void histgram(File file) throws IOException{
+    public static int[] histogram(File file) throws IOException{
       BufferedImage read = ImageIO.read(file);
       int w = read.getWidth();
       int h = read.getHeight();
@@ -368,6 +376,7 @@ public class calculate {
         }
       }
 
+    //show histogram
       for(int i = 0; i < 255/15; i++){
         System.out.printf("%3d~%3d: ", i * 15, i * 15 + 15);
 
@@ -383,11 +392,24 @@ public class calculate {
           }
 
         }
-
-
         System.out.printf(" %d\n", his[i]);
-
       }
+      //return an array of histogram. the ratio fo White to Black.
+      return his;
+    }
+
+    //閾値、またはフィルタを変更するか否か判定
+    public static boolean judgeHistogram(int[] his){
+        //RGB値が大きいほど白の割合が高い
+        int ratio=0;
+
+        for(int i=0; i<255/15; i++){
+            ratio += his[i]*i;
+        }
+        
+        System.out.println("white ratio: " + ratio);
+        boolean judge = true;
+        return judge;
     }
 
     //グレースケール画像にガウシアンフィルタ
@@ -412,15 +434,15 @@ public class calculate {
                     for (int m = 0; m < filterG.length; m++) {
                         int c = read.getRGB(i - 1 + m, j - 1 + l);
                         double r = iu.r(c);
-                        System.out.print(" color:" + c + " , r:" + r);
+                        //System.out.print(" color:" + c + " , r:" + r);
                         //int rgb = iu.rgb(r, g, b);
                         r *= filterG[l][m];
                         cal += r;
                         // System.out.print("cal:" + calr + " " + r + " ");
                     }
-                    System.out.println();
+                    //System.out.println();
                 }
-                System.out.println();
+               //System.out.println();
                 if (cal > 255) {
                     cal = 255;
                 } else if (cal < 0) {
@@ -500,7 +522,7 @@ public class calculate {
                 }
                 */
                 cal = r[0] - 2 * r[1] + r[2];
-                System.out.print(" " + cal);
+               // System.out.print(" " + cal);
                 rgbset = iu.rgb(cal, cal, cal);
                 //rgbList.add(x, rgbset);
                 write.setRGB(x, y, rgbset);
@@ -545,7 +567,7 @@ public class calculate {
                 }
                 */
                 cal = r[0] - 2 * r[1] + r[2];
-                System.out.print(" " + cal);
+                //System.out.print(" " + cal);
                 rgbset = iu.rgb(cal, cal, cal);
                 //rgbList.add(x, rgbset);
                 write.setRGB(x, y, rgbset);
