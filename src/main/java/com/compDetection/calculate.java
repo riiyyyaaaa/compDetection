@@ -6,17 +6,32 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 
+import java.awt.image.BufferedImage;
+import java.io.*;
+
+import javax.imageio.ImageIO;
+import java.awt.image.*;
+import java.awt.Toolkit;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
+import java.awt.image.AreaAveragingScaleFilter;
+import java.awt.Graphics2D;
+import javax.swing.JFileChooser;
+import javax.swing.*;
+
 public class calculate {
     public static void main() {
 
     }
+
     /**
      * cannyエッジ検出
      */
-    public static void canny(File file,double ro, double up, double down) throws IOException {
+    public static void canny(File file, double ro, double up, double down) throws IOException {
         BufferedImage read = ImageIO.read(file);
         int cal = 0;
         int w = read.getWidth(), h = read.getHeight();
+        System.out.println("w,h:" + w + ", " + h);
         double edgeSize = 0.0; //エッジの大きさ
         double angle = 0.0; //ベクトルの角度
         ArrayList rgbList = new ArrayList<Integer>();
@@ -35,23 +50,23 @@ public class calculate {
         double filterX[][] = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
         double filterY[][] = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
         //double filterY[][] = new double[filter.length - 1][filter.length - 1]; //y方向に一次微分したガウシアンフィルタ
-        double pFilterX[][] = {{-1, 0, 1}, {-1, 0, 1}, {-1, 0, 1}};
-        double pFilterY[][] = {{-1, -1, -1}, {0, 0, 0}, {1, 1, 1}};
+        double pFilterX[][] = { { -1, 0, 1 }, { -1, 0, 1 }, { -1, 0, 1 } };
+        double pFilterY[][] = { { -1, -1, -1 }, { 0, 0, 0 }, { 1, 1, 1 } };
 
         //ガウシアンフィルタと元画像畳み込み
         writeF = convo(read, filter);
         File f = new File("Gau" + filename);
-        ImageIO.write(writeF, "jpg", f);
+        //ImageIO.write(writeF, "jpg", f);
 
         //一次微分したx方向ガウシアンフィルタと元画像の畳み込み: ΔFx(x,y)
         writeDelFx = convo(writeF, pFilterX);
         File fDelx = new File("DelFx.jpg");
-        ImageIO.write(writeDelFx, "jpg", fDelx);
+        //ImageIO.write(writeDelFx, "jpg", fDelx);
 
         //一次微分したy方向ガウシアンフィルタと元画像の畳み込み: ΔFy(x,y)
         writeDelFy = convo(writeF, pFilterY);
         File fDely = new File("DelFy.jpg");
-        ImageIO.write(writeDelFy, "jpg", fDely);
+        //ImageIO.write(writeDelFy, "jpg", fDely);
 
         //System.out.println("+++++++++++finish!!!++++++++++");
 
@@ -62,28 +77,40 @@ public class calculate {
         //Saisen(writeDelFx, writeDelFy, sabun(writeDelFx, writeDelFy));
 
         //ヒステリシス処理
-        writeF = Saisen2(writeDelFx,writeDelFy);
+        writeF = Saisen2(writeDelFx, writeDelFy);
         File f2 = new File("saisen" + filename);
-        ImageIO.write(writeF,"jpg", f2);
+        //ImageIO.write(writeF, "jpg", f2);
 
         writeF = hysteresis(writeF, up, down);
-        int r = (int)ro;
-        int u = (int)up;
-        int d = (int)down;
-        if(ro-r>0){
-            imagename = String.valueOf(r) + "-" + String.valueOf(ro-r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) +"_" + filename;
-        }else{
-            imagename = String.valueOf(r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) +"_" + filename;
+        int r = (int) ro;
+        int u = (int) up;
+        int d = (int) down;
+        if (ro - r > 0) {
+            imagename = filename + "_" + String.valueOf(r) + "-" + String.valueOf(ro - r) + "_" + String.valueOf(u)
+                    + "_" + String.valueOf(d) + "_" + filename;
+        } else {
+            imagename = filename + "_" + String.valueOf(r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) + "_"
+                    + filename;
         }
-        f2 = new File( "C:\\detectEdge\\edgetest", imagename);
-        ImageIO.write(writeF,"jpg", f2);
+        f2 = new File("C:\\detectEdge\\edgetest", imagename);
+        ImageIO.write(writeF, "jpg", f2);
 
         File textfile = new File("c:\\detectEdge\\edgetext.txt");
         FileWriter filewriter = new FileWriter(textfile, true);
-        filewriter.write( ",   " + imagename + ": " + String.valueOf(judgeHistogram(histogram(f2))));
+        filewriter.write(",   " + imagename + ": " + String.valueOf(judgeHistogram(histogram(f2))));
         filewriter.close();
-        
+
         System.out.println(imagename + ": " + String.valueOf(judgeHistogram(histogram(f2))));
+    }
+
+    /**
+     * 画像にヒストグラムによる白の割合値を記載する
+     */
+    public static File writeRatio(File file) throws IOException {
+        BufferedImage read = ImageIO.read(file);
+        //ImageProducer p = new 
+
+        return file;
     }
 
     /**
@@ -122,7 +149,7 @@ public class calculate {
         //System.out.println("+++++++++++FILTER++++++++++");
         //double filter[][] = Gfilter(ro);
 
-        System.out.println("\n+++++++++++CONVO+++++++++++");
+        //System.out.println("\n+++++++++++CONVO+++++++++++");
 
         for (int i = 1; i < w - filter.length + 2; i++) {
             for (int j = 1; j < h - filter.length + 2; j++) {
@@ -337,13 +364,13 @@ public class calculate {
                     size[0] = 0;
                 } else {
                     //中間
-                    for(int i =  1; i < size.length; i++){
-                      if(size[i] < size[0]){
-                        judge = true;
-                      }else{
-                        judge = false;
-                        break;
-                      }
+                    for (int i = 1; i < size.length; i++) {
+                        if (size[i] < size[0]) {
+                            judge = true;
+                        } else {
+                            judge = false;
+                            break;
+                        }
                     }
                     if (judge) {
                         //System.out.println("edge");
@@ -365,52 +392,52 @@ public class calculate {
     }
 
     //ヒストグラムと白黒値の比
-    public static int[] histogram(File file) throws IOException{
-      BufferedImage read = ImageIO.read(file);
-      int w = read.getWidth();
-      int h = read.getHeight();
-      BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-      ImageUtility iu = new ImageUtility();
-      int[] his = new int[255/15];
+    public static int[] histogram(File file) throws IOException {
+        BufferedImage read = ImageIO.read(file);
+        int w = read.getWidth();
+        int h = read.getHeight();
+        BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        ImageUtility iu = new ImageUtility();
+        int[] his = new int[255 / 15];
 
-      for(int y = 0; y < h; y++){
-        for(int x = 0; x < w; x++){
-          int c = iu.r(read.getRGB(x, y));
-          his[c%15] ++;
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int c = iu.r(read.getRGB(x, y));
+                his[c % 15]++;
+            }
         }
-      }
 
-    //show histogram
-      for(int i = 0; i < 255/15; i++){
-        System.out.printf("%3d~%3d: ", i * 15, i * 15 + 15);
+        //show histogram
+        for (int i = 0; i < 255 / 15; i++) {
+            System.out.printf("%3d~%3d: ", i * 15, i * 15 + 15);
 
-        for(int j = 0; j < 30; j++){
-          if((int)his[i]/100 > 30 && j>30){
-            System.out.printf("~");
-            break;
-          }
-          if(j < (int)his[i]/100){
-            System.out.printf("*");
-          }else{
-            System.out.printf(" ");
-          }
+            for (int j = 0; j < 30; j++) {
+                if ((int) his[i] / 100 > 30 && j > 30) {
+                    System.out.printf("~");
+                    break;
+                }
+                if (j < (int) his[i] / 100) {
+                    System.out.printf("*");
+                } else {
+                    System.out.printf(" ");
+                }
 
+            }
+            System.out.printf(" %d\n", his[i]);
         }
-        System.out.printf(" %d\n", his[i]);
-      }
-      //return an array of histogram. the ratio fo White to Black.
-      return his;
+        //return an array of histogram. the ratio fo White to Black.
+        return his;
     }
 
     //閾値、またはフィルタを変更するか否か判定
-    public static int judgeHistogram(int[] his){
+    public static int judgeHistogram(int[] his) {
         //RGB値が大きいほど白の割合が高い
-        int ratio=0;
+        int ratio = 0;
 
-        for(int i=0; i<255/15; i++){
-            ratio += his[i]*i;
+        for (int i = 0; i < 255 / 15; i++) {
+            ratio += his[i] * i;
         }
-        
+
         System.out.println("white ratio: " + ratio);
         boolean judge = true;
         return ratio;
@@ -446,7 +473,7 @@ public class calculate {
                     }
                     //System.out.println();
                 }
-               //System.out.println();
+                //System.out.println();
                 if (cal > 255) {
                     cal = 255;
                 } else if (cal < 0) {
@@ -459,7 +486,7 @@ public class calculate {
         }
         File f2 = new File("tetemonogau.jpg");
         ImageIO.write(write, "jpg", f2);
-      }
+    }
 
     public static File Mono(File file) throws IOException {
         BufferedImage readImage = ImageIO.read(file);
@@ -526,7 +553,7 @@ public class calculate {
                 }
                 */
                 cal = r[0] - 2 * r[1] + r[2];
-               // System.out.print(" " + cal);
+                // System.out.print(" " + cal);
                 rgbset = iu.rgb(cal, cal, cal);
                 //rgbList.add(x, rgbset);
                 write.setRGB(x, y, rgbset);
@@ -585,20 +612,20 @@ public class calculate {
     //ガウシアンフィルタをｘ方向に一次微分: Gx(画面の明度をかなり上げないと見えない)
     /*
     for (int y = 0; y < filter.length - 1; y++) {
-
+    
         for (int x = 0; x < filter.length - 1; x++) {
-
+    
             filterX[y][x] = -filter[y][x + 1] + filter[y][x];
             System.out.printf("%.3f", filterX[x][y]);
         }
         System.out.print("\n");
     }
-
+    
     //ガウシアンフィルタをy方向に一次微分: Gy
     for (int y = 0; y < filter.length - 1; y++) {
-
+    
         for (int x = 0; x < filter.length - 1; x++) {
-
+    
             filterY[y][x] = -filter[y + 1][x] + filter[y][x];
             System.out.printf(" %.3f", filterY[x][y]);
         }
@@ -630,8 +657,6 @@ public class calculate {
                     val = rx - ry;
                 }
 
-                // val = Math.sqrt(rx * rx + ry * ry);
-
                 if (val > 255) {
                     val = 255;
                 } else if (val < 0) {
@@ -643,7 +668,7 @@ public class calculate {
 
             }
             File f2 = new File("sabun.jpg");
-            ImageIO.write(write, "jpg", f2);
+            //ImageIO.write(write, "jpg", f2);
 
         }
 
