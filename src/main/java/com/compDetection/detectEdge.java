@@ -9,12 +9,13 @@ import javax.swing.JFileChooser;
 import javax.imageio.ImageIO;
 
 public class detectEdge {
-    public static void main(String[] args) throws IOException {
+    public static double size = 100;
 
+    public static void main(String[] args) throws IOException {
+        ImageUtility iu = new ImageUtility();
         int number = 1; //ファイルの読み込み順番
 
         while (number <= 156) {
-            ImageUtility iu = new ImageUtility();
             calculate cal = new calculate();
             //File f = new File("C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\4.jpg");
             String str = "C:\\photo\\" + String.valueOf(number) + ".jpg";
@@ -28,12 +29,12 @@ public class detectEdge {
             int w = read.getWidth(), h = read.getHeight();
 
             //resize an image
-            if (w != 300 || h != 300) {
+            if (w != size || h != size) {
                 //System.out.println("w, h, w*h, scale:" + w + ", " + h + ", " + w*h + "," + (double)80000/(h*w));
-                System.out.println("\n\n\nStart Resize\n\n\n");
-                File f2 = iu.scaleImage(f, (double) 300 / w, (double) 300 / h);
+                System.out.println("Start Resize");
+                File f2 = iu.scaleImage(f, (double) size / w, (double) size / h);
                 BufferedImage read2 = ImageIO.read(f2);
-                System.out.println(read2.getWidth() + ", " + read2.getHeight());
+                //System.out.println(read2.getWidth() + ", " + read2.getHeight());
 
                 //detect edge
                 f2 = cal.Mono(f2);
@@ -42,7 +43,7 @@ public class detectEdge {
                 cal.canny(f2, 1, 100, 50);
                 cal.canny(f2, 1, 150, 100);
                 cal.canny(f2, 1.5, 100, 50);
-                cal.canny(f2, 1.5, 150, 100);
+                //cal.canny(f2, 1.5, 150, 100);
 
             } else {
                 File f2 = f;
@@ -56,7 +57,7 @@ public class detectEdge {
                 cal.canny(f3, 1, 100, 50);
                 cal.canny(f3, 1, 150, 100);
                 cal.canny(f3, 1.5, 100, 50);
-                cal.canny(f3, 1.5, 150, 100);
+                //cal.canny(f3, 1.5, 150, 100);
 
             }
             number++;

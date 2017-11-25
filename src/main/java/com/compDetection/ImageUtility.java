@@ -12,6 +12,10 @@ import java.awt.image.AreaAveragingScaleFilter;
 import java.awt.Graphics2D;
 import javax.swing.JFileChooser;
 
+import java.io.File;
+import javax.imageio.*;
+import java.awt.*;
+
 public class ImageUtility {
     public static int a(int c) {
         return c >>> 24;
@@ -61,6 +65,17 @@ public class ImageUtility {
         ImageIO.write(dst, "jpg", out);
 
         return out;
+    }
+
+    /**
+     * 文字列を画像に書き込む
+     */
+    public static BufferedImage drawStr(BufferedImage read, double value, int width) {
+        Graphics graphics = read.createGraphics();
+        graphics.setColor(Color.WHITE);
+        graphics.drawString(String.valueOf(value), width - 50, width - 20);
+
+        return read;
     }
 
     public static void main(String[] args) {

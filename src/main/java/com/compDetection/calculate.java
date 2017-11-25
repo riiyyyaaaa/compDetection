@@ -6,22 +6,10 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 
-import java.awt.image.BufferedImage;
-import java.io.*;
-
-import javax.imageio.ImageIO;
-import java.awt.image.*;
-import java.awt.Toolkit;
-import java.awt.image.FilteredImageSource;
-import java.awt.image.ImageFilter;
-import java.awt.image.AreaAveragingScaleFilter;
-import java.awt.Graphics2D;
-import javax.swing.JFileChooser;
-import javax.swing.*;
-
 public class calculate {
-    public static void main() {
+    public static final ImageUtility iu = new ImageUtility();
 
+    public static void main() {
     }
 
     /**
@@ -38,7 +26,6 @@ public class calculate {
         BufferedImage writeDelFx = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         BufferedImage writeDelFy = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         BufferedImage writeF = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
         JFileChooser filechooser = new JFileChooser();
         String filename = filechooser.getName(file);
         String imagename;
@@ -82,6 +69,9 @@ public class calculate {
         //ImageIO.write(writeF, "jpg", f2);
 
         writeF = hysteresis(writeF, up, down);
+        
+        //画像に白の割合を描画
+        writeF = writeRatio(writeF);
         int r = (int) ro;
         int u = (int) up;
         int d = (int) down;
@@ -92,25 +82,24 @@ public class calculate {
             imagename = filename + "_" + String.valueOf(r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) + "_"
                     + filename;
         }
-        f2 = new File("C:\\detectEdge\\edgetest", imagename);
+        f2 = new File("C:\\detectEdge\\edgetest3", imagename);
         ImageIO.write(writeF, "jpg", f2);
 
-        File textfile = new File("c:\\detectEdge\\edgetext.txt");
-        FileWriter filewriter = new FileWriter(textfile, true);
-        filewriter.write(",   " + imagename + ": " + String.valueOf(judgeHistogram(histogram(f2))));
-        filewriter.close();
-
-        System.out.println(imagename + ": " + String.valueOf(judgeHistogram(histogram(f2))));
+        //File textfile = new File("c:\\detectEdge\\edgetext3.txt");
+        //FileWriter filewriter = new FileWriter(textfile, true);
+        //filewriter.write(",   " + imagename + ": " + String.valueOf(judgeHistogram(histogram(f2))));
+        //filewriter.close();
     }
 
     /**
      * 画像にヒストグラムによる白の割合値を記載する
      */
-    public static File writeRatio(File file) throws IOException {
-        BufferedImage read = ImageIO.read(file);
-        //ImageProducer p = new 
+    public static BufferedImage writeRatio(BufferedImage read) throws IOException {
+        int[] array = histogram(read);
+        int value = judgeHistogram(array);
+        BufferedImage write = iu.drawStr(read, value, read.getWidth());
 
-        return file;
+        return write;
     }
 
     /**
@@ -392,8 +381,7 @@ public class calculate {
     }
 
     //ヒストグラムと白黒値の比
-    public static int[] histogram(File file) throws IOException {
-        BufferedImage read = ImageIO.read(file);
+    public static int[] histogram(BufferedImage read) throws IOException {
         int w = read.getWidth();
         int h = read.getHeight();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
@@ -508,8 +496,8 @@ public class calculate {
         // イメージをファイルに出力する
         JFileChooser jfilechooser = new JFileChooser();
         String filename = jfilechooser.getName(file);
-        File file2 = new File("mono" + filename);
-        ImageIO.write(writeImage, "png", file2);
+        File file2 = new File(filename);
+        ImageIO.write(writeImage, "jpg", file2);
 
         return file2;
     }
