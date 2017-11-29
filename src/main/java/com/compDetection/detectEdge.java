@@ -9,7 +9,7 @@ import javax.swing.JFileChooser;
 import javax.imageio.ImageIO;
 
 public class detectEdge {
-    public static double size = 100;
+    public static double size = 200;
 
     public static void main(String[] args) throws IOException {
         ImageUtility iu = new ImageUtility();

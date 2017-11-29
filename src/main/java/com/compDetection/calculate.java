@@ -8,6 +8,8 @@ import javax.swing.JFileChooser;
 
 public class calculate {
     public static final ImageUtility iu = new ImageUtility();
+    public static final int upratio = 13000;
+    public static final int downratio = 10000;
 
     public static void main() {
     }
@@ -19,7 +21,11 @@ public class calculate {
         BufferedImage read = ImageIO.read(file);
         int cal = 0;
         int w = read.getWidth(), h = read.getHeight();
+        int repeatCount = 0; //何回エッジの再計算を行ったか
+        int repeat = 3; //エッジの差異計算が必要かどうか
+
         System.out.println("w,h:" + w + ", " + h);
+
         double edgeSize = 0.0; //エッジの大きさ
         double angle = 0.0; //ベクトルの角度
         ArrayList rgbList = new ArrayList<Integer>();
@@ -30,48 +36,64 @@ public class calculate {
         String filename = filechooser.getName(file);
         String imagename;
 
-        //System.out.println("+++++++++++FILTER++++++++++");
-        //ガウシアンフィルタの生成
-        double filter[][] = Gfilter(ro);
-        //double filterX[][] = new double[filter.length - 1][filter.length - 1]; //x方向に一次微分したガウシアンフィルタ
-        double filterX[][] = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
-        double filterY[][] = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
-        //double filterY[][] = new double[filter.length - 1][filter.length - 1]; //y方向に一次微分したガウシアンフィルタ
-        double pFilterX[][] = { { -1, 0, 1 }, { -1, 0, 1 }, { -1, 0, 1 } };
-        double pFilterY[][] = { { -1, -1, -1 }, { 0, 0, 0 }, { 1, 1, 1 } };
+        //エッジが適切な量になるまで繰り返す
+        while (repeat != 0) {
 
-        //ガウシアンフィルタと元画像畳み込み
-        writeF = convo(read, filter);
-        File f = new File("Gau" + filename);
-        //ImageIO.write(writeF, "jpg", f);
+            //repeatの値によって上限値下限値を変更
 
-        //一次微分したx方向ガウシアンフィルタと元画像の畳み込み: ΔFx(x,y)
-        writeDelFx = convo(writeF, pFilterX);
-        File fDelx = new File("DelFx.jpg");
-        //ImageIO.write(writeDelFx, "jpg", fDelx);
+            //System.out.println("+++++++++++FILTER++++++++++");
+            //ガウシアンフィルタの生成
+            double filter[][] = Gfilter(ro);
+            //double filterX[][] = new double[filter.length - 1][filter.length - 1]; //x方向に一次微分したガウシアンフィルタ
+            double filterX[][] = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
+            double filterY[][] = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+            //double filterY[][] = new double[filter.length - 1][filter.length - 1]; //y方向に一次微分したガウシアンフィルタ
+            double pFilterX[][] = { { -1, 0, 1 }, { -1, 0, 1 }, { -1, 0, 1 } };
+            double pFilterY[][] = { { -1, -1, -1 }, { 0, 0, 0 }, { 1, 1, 1 } };
 
-        //一次微分したy方向ガウシアンフィルタと元画像の畳み込み: ΔFy(x,y)
-        writeDelFy = convo(writeF, pFilterY);
-        File fDely = new File("DelFy.jpg");
-        //ImageIO.write(writeDelFy, "jpg", fDely);
+            //ガウシアンフィルタと元画像畳み込み
+            writeF = convo(read, filter);
+            File f = new File("Gau" + filename);
+            //ImageIO.write(writeF, "jpg", f);
 
-        //System.out.println("+++++++++++finish!!!++++++++++");
+            //一次微分したx方向ガウシアンフィルタと元画像の畳み込み: ΔFx(x,y)
+            writeDelFx = convo(writeF, pFilterX);
+            File fDelx = new File("DelFx.jpg");
+            //ImageIO.write(writeDelFx, "jpg", fDelx);
 
-        //差分
-        sabun(writeDelFx, writeDelFy);
-        //エッジ細線化
+            //一次微分したy方向ガウシアンフィルタと元画像の畳み込み: ΔFy(x,y)
+            writeDelFy = convo(writeF, pFilterY);
+            File fDely = new File("DelFy.jpg");
+            //ImageIO.write(writeDelFy, "jpg", fDely);
 
-        //Saisen(writeDelFx, writeDelFy, sabun(writeDelFx, writeDelFy));
+            //System.out.println("+++++++++++finish!!!++++++++++");
 
-        //ヒステリシス処理
-        writeF = Saisen2(writeDelFx, writeDelFy);
-        File f2 = new File("saisen" + filename);
-        //ImageIO.write(writeF, "jpg", f2);
+            //差分
+            sabun(writeDelFx, writeDelFy);
+            //エッジ細線化
 
-        writeF = hysteresis(writeF, up, down);
-        
-        //画像に白の割合を描画
-        writeF = writeRatio(writeF);
+            //Saisen(writeDelFx, writeDelFy, sabun(writeDelFx, writeDelFy));
+
+            //ヒステリシス処理
+            writeF = Saisen2(writeDelFx, writeDelFy);
+            File f2 = new File("saisen" + filename);
+            //ImageIO.write(writeF, "jpg", f2);
+            writeF = hysteresis(writeF, up, down);
+
+            //x, y = 0 を黒く塗りつぶす
+            writeF = fillBlack(writeF);
+
+            //とりあえず二値化しておく、後で変更しそう
+            //writeF = tranc2Value(writeF);
+
+            //画像に白の割合を描画
+            int[] his = histogram(writeF);
+            int value = whiteRatio(his);
+            repeat = edgeVal(value, upratio, downratio);
+            writeF = iu.drawStr(writeF, value, read.getWidth());
+        }
+
+        //ファイル出力
         int r = (int) ro;
         int u = (int) up;
         int d = (int) down;
@@ -96,7 +118,7 @@ public class calculate {
      */
     public static BufferedImage writeRatio(BufferedImage read) throws IOException {
         int[] array = histogram(read);
-        int value = judgeHistogram(array);
+        int value = whiteRatio(array);
         BufferedImage write = iu.drawStr(read, value, read.getWidth());
 
         return write;
@@ -133,7 +155,7 @@ public class calculate {
         int w = read.getWidth(), h = read.getHeight();
         ArrayList rgbList = new ArrayList<Integer>();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
+        //ImageUtility iu = new ImageUtility();
 
         //System.out.println("+++++++++++FILTER++++++++++");
         //double filter[][] = Gfilter(ro);
@@ -257,7 +279,7 @@ public class calculate {
         int rx = 0, ry = 0;
         double[] edgeSize = { 0, 0, 0 };
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
+        //ImageUtility iu = new ImageUtility();
         int count2 = 0;
         int count[] = { 0, 0, 0 }; //細線化したピクセル数、元から0だったピクセル数、エッジになったピクセル数(全然違うけど雰囲気)
 
@@ -326,7 +348,7 @@ public class calculate {
     public static BufferedImage hysteresis(BufferedImage read, double up, double down) throws IOException {
         //double up = 100, down = 50; //上限値、下限値
         int w = read.getWidth(), h = read.getHeight();
-        ImageUtility iu = new ImageUtility();
+        //ImageUtility iu = new ImageUtility();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         double[] size = new double[9]; //隣接4方向のエッジ強度
         boolean judge = true;
@@ -354,8 +376,11 @@ public class calculate {
                 } else {
                     //中間
                     for (int i = 1; i < size.length; i++) {
+                        //そのRGB値を採用
                         if (size[i] < size[0]) {
                             judge = true;
+
+                            //エッジではないとする
                         } else {
                             judge = false;
                             break;
@@ -385,44 +410,56 @@ public class calculate {
         int w = read.getWidth();
         int h = read.getHeight();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
-        int[] his = new int[255 / 15];
+        //ImageUtility iu = new ImageUtility();
+        int[] his = new int[255 / 15 + 5];
+        //RGB値が0でないもののカウント
+        //int count = 0;
 
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 int c = iu.r(read.getRGB(x, y));
-                his[c % 15]++;
+                his[c / 15]++;
             }
         }
 
         //show histogram
-        for (int i = 0; i < 255 / 15; i++) {
+        showHistogram(his);
+        //return an array of histogram. the ratio fo White to Black.
+        return his;
+    }
+
+    /**
+     * ヒストグラムの表示
+     */
+    public static void showHistogram(int[] histgram) {
+        //show histogram
+        for (int i = 0; i <= 255 / 15; i++) {
             System.out.printf("%3d~%3d: ", i * 15, i * 15 + 15);
 
             for (int j = 0; j < 30; j++) {
-                if ((int) his[i] / 100 > 30 && j > 30) {
+                if ((int) histgram[i] / 100 > 30 && j > 30) {
                     System.out.printf("~");
                     break;
                 }
-                if (j < (int) his[i] / 100) {
+                if (j < (int) histgram[i] / 100) {
                     System.out.printf("*");
                 } else {
                     System.out.printf(" ");
                 }
 
             }
-            System.out.printf(" %d\n", his[i]);
+            System.out.printf(" %d\n", histgram[i]);
         }
-        //return an array of histogram. the ratio fo White to Black.
-        return his;
     }
 
-    //閾値、またはフィルタを変更するか否か判定
-    public static int judgeHistogram(int[] his) {
+    /**
+     * ヒストグラムからエッジのり量を返却
+     */
+    public static int whiteRatio(int[] his) {
         //RGB値が大きいほど白の割合が高い
         int ratio = 0;
 
-        for (int i = 0; i < 255 / 15; i++) {
+        for (int i = 0; i <= 255 / 15; i++) {
             ratio += his[i] * i;
         }
 
@@ -431,13 +468,74 @@ public class calculate {
         return ratio;
     }
 
+    /**
+     * しきい値に従ってエッジの量が適切か判定
+     * 0->適切, 1->多い, 2->少ない
+     */
+    public static int edgeVal(int ratio, int up, int down) {
+        if (ratio > up) {
+            //エッジが多いとき
+            return 1;
+        } else if (ratio < down) {
+            //エッジが少ないとき
+            return 2;
+        } else {
+            //適切なとき
+            return 0;
+        }
+    }
+
+    /**
+     * 画像を二値にする
+     */
+    public static BufferedImage tranc2Value(BufferedImage read) {
+        int w = read.getWidth();
+        int h = read.getHeight();
+        int rgb = 0;
+        BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int c = iu.r(read.getRGB(x, y));
+                if (c != 0) {
+                    rgb = iu.rgb(255, 255, 255);
+                } else {
+                    rgb = iu.rgb(0, 0, 0);
+                }
+                write.setRGB(x, y, rgb);
+            }
+        }
+        return write;
+    }
+
+    /**
+     * x, y=0を黒くする処理
+     */
+    public static BufferedImage fillBlack(BufferedImage read) {
+        int w = read.getWidth();
+        int h = read.getHeight();
+
+        for (int i = 0; i < w; i++) {
+            int rgb = iu.rgb(0, 0, 0);
+            read.setRGB(i, 0, rgb);
+            read.setRGB(i, 1, rgb);
+        }
+        for (int i = 0; i < h; i++) {
+            int rgb = iu.rgb(0, 0, 0);
+            read.setRGB(0, i, rgb);
+            read.setRGB(1, i, rgb);
+        }
+
+        return read;
+    }
+
     //グレースケール画像にガウシアンフィルタ
     public static void monoGaussianFilter(File file) throws IOException {
         BufferedImage read = ImageIO.read(file);
         int w = read.getWidth();
         int h = read.getHeight();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
+        //ImageUtility iu = new ImageUtility();
         int ro = 1;
         //filterを指定。後で動的に変えられるようにメソッド作る
         double[][] filter = { { 0.11f, 0.11f, 0.11f }, { 0.11f, 0.12f, 0.11f }, { 0.11f, 0.11f, 0.11f } };
@@ -480,7 +578,7 @@ public class calculate {
         BufferedImage readImage = ImageIO.read(file);
         int w = readImage.getWidth(), h = readImage.getHeight();
         BufferedImage writeImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
+        //ImageUtility iu = new ImageUtility();
 
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
@@ -518,7 +616,7 @@ public class calculate {
         int w = read.getWidth(), h = read.getHeight();
         ArrayList rgbList = new ArrayList<Integer>();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
+        //ImageUtility iu = new ImageUtility();
 
         for (int y = 1; y < h - 1; y++) {
 
@@ -563,7 +661,7 @@ public class calculate {
         int w = read.getWidth(), h = read.getHeight();
         ArrayList rgbList = new ArrayList<Integer>();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
+        //ImageUtility iu = new ImageUtility();
 
         for (int y = 1; y < h - 1; y++) {
 
@@ -627,7 +725,7 @@ public class calculate {
     public static BufferedImage sabun(BufferedImage readX, BufferedImage readY) throws IOException {
         int w = readX.getWidth(), h = readX.getHeight();
         BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        ImageUtility iu = new ImageUtility();
+        //ImageUtility iu = new ImageUtility();
         int cx = 0, cy = 0, rx = 0, ry = 0;
         double val = 0;
 
