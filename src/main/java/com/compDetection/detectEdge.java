@@ -38,11 +38,11 @@ public class detectEdge {
 
                 //detect edge
                 f2 = cal.Mono(f2);
-                cal.canny(f2, 0.5, 100, 50);
-                cal.canny(f2, 0.5, 150, 100);
+                //cal.canny(f2, 0.5, 100, 50);
+                //cal.canny(f2, 0.5, 150, 100);
                 cal.canny(f2, 1, 100, 50);
-                cal.canny(f2, 1, 150, 100);
-                cal.canny(f2, 1.5, 100, 50);
+                //cal.canny(f2, 1, 150, 100);
+                //cal.canny(f2, 1.5, 100, 50);
                 //cal.canny(f2, 1.5, 150, 100);
 
             } else {
@@ -52,11 +52,12 @@ public class detectEdge {
 
                 //detect edge
                 File f3 = cal.Mono(f2);
-                cal.canny(f3, 0.5, 100, 50);
-                cal.canny(f3, 0.5, 150, 100);
+                //cal.canny(f3, 0.5, 100, 50);
+                //cal.canny(f3, 0.5, 150, 100);
+
                 cal.canny(f3, 1, 100, 50);
-                cal.canny(f3, 1, 150, 100);
-                cal.canny(f3, 1.5, 100, 50);
+                //cal.canny(f3, 1, 150, 100);
+                //cal.canny(f3, 1.5, 100, 50);
                 //cal.canny(f3, 1.5, 150, 100);
 
             }

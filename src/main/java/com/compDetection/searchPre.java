@@ -153,6 +153,42 @@ public class searchPre {
     }
 
     /**
+     * 点の探索範囲を計算
+     */
+    public static double calcRange(double[][][] point) {
+        double sum = 0;
+        return sum;
+    }
+
+    /**
+     * 論文を参考にした類似度計算
+     */
+    public static double calcSimilarity2(double[][][] point1, double[][][] point2) {
+        double similarity = 0; //類似度
+        double[] range1 = new double[((w / interval) - 1) * ((w / interval) - 1)]; //point1の各点の探索範囲
+        double[] range2 = new double[((w / interval) - 1) * ((w / interval) - 1)]; //point2の各点の探索範囲
+
+        //探索範囲の計算
+        for (int i = 0; i < ((w / interval) - 1) * ((w / interval) - 1); i++) {
+            range1[i] = 0;
+            range2[i] = 0;
+            for (int j = 0; j < ra; j++) {
+                if ((point1[i][j][0] != 0) && (point2[i][j][0] != 0)) {
+                    //共に探索成功している場合
+                    range1[i] += point1[i][j][2];
+                    range2[i] += point2[i][j][2];
+                    System.out.printf(" %4.1f , %4.1f ", range1[i], range2[i]);
+                } else {
+                    //探索失敗している場合
+                    System.out.printf("  F  ");
+                }
+            }
+        }
+
+        return similarity;
+    }
+
+    /**
      * extractFeatureをもとに類似度計算を行う
      */
     public static double calcSimilarity(double[][][] point1, double[][][] point2) {

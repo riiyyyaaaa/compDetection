@@ -8,7 +8,7 @@ import javax.swing.JFileChooser;
 
 public class calculate {
     public static final ImageUtility iu = new ImageUtility();
-    public static final int upratio = 13000;
+    public static final int upratio = 12000;
     public static final int downratio = 10000;
 
     public static void main() {
@@ -18,6 +18,7 @@ public class calculate {
      * cannyエッジ検出
      */
     public static void canny(File file, double ro, double up, double down) throws IOException {
+
         BufferedImage read = ImageIO.read(file);
         int cal = 0;
         int w = read.getWidth(), h = read.getHeight();
@@ -39,7 +40,27 @@ public class calculate {
         //エッジが適切な量になるまで繰り返す
         while (repeat != 0) {
 
+            if (repeatCount >= 100) {
+                //回数が50を超えたら強制的にループを抜ける
+                break;
+            }
+
             //repeatの値によって上限値下限値を変更
+            if (repeat == 1) {
+                System.out.printf("up ");
+                //エッジが多かった場合
+                ro += 0.1;
+                up += 10;
+                down += 10;
+
+            } else if (repeat == 2) {
+                System.out.printf("down ");
+                //エッジが少なかった場合
+                ro -= 0.1;
+                up -= 10;
+                down -= 10;
+
+            }
 
             //System.out.println("+++++++++++FILTER++++++++++");
             //ガウシアンフィルタの生成
@@ -76,7 +97,6 @@ public class calculate {
 
             //ヒステリシス処理
             writeF = Saisen2(writeDelFx, writeDelFy);
-            File f2 = new File("saisen" + filename);
             //ImageIO.write(writeF, "jpg", f2);
             writeF = hysteresis(writeF, up, down);
 
@@ -89,9 +109,13 @@ public class calculate {
             //画像に白の割合を描画
             int[] his = histogram(writeF);
             int value = whiteRatio(his);
-            repeat = edgeVal(value, upratio, downratio);
-            writeF = iu.drawStr(writeF, value, read.getWidth());
+            repeat = edgeVal(value);
+            //writeF = iu.drawStr(writeF, value, read.getWidth());
+
+            repeatCount++;
         }
+
+        File f2 = new File("saisen" + filename);
 
         //ファイル出力
         int r = (int) ro;
@@ -423,7 +447,7 @@ public class calculate {
         }
 
         //show histogram
-        showHistogram(his);
+        //showHistogram(his);
         //return an array of histogram. the ratio fo White to Black.
         return his;
     }
@@ -472,11 +496,11 @@ public class calculate {
      * しきい値に従ってエッジの量が適切か判定
      * 0->適切, 1->多い, 2->少ない
      */
-    public static int edgeVal(int ratio, int up, int down) {
-        if (ratio > up) {
+    public static int edgeVal(int ratio) {
+        if (ratio > upratio) {
             //エッジが多いとき
             return 1;
-        } else if (ratio < down) {
+        } else if (ratio < downratio) {
             //エッジが少ないとき
             return 2;
         } else {
