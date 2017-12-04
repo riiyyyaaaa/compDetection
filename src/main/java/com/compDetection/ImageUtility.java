@@ -78,6 +78,22 @@ public class ImageUtility {
         return read;
     }
 
+    /**
+     * 2つ画像を横に並べた画像の作成
+     */
+    public static BufferedImage outputResult(BufferedImage img1, BufferedImage img2) {
+        int h = img1.getHeight();
+        if (img1.getHeight() < img2.getHeight()) {
+            h = img2.getHeight();
+        }
+        BufferedImage write = new BufferedImage(img1.getWidth() + img2.getWidth(), h, BufferedImage.TYPE_INT_RGB);
+        Graphics g = write.getGraphics();
+        g.drawImage(img1, 0, 0, null);
+        g.drawImage(img2, img1.getWidth(), 0, null);
+
+        return write;
+    }
+
     public static void main(String[] args) {
 
     }

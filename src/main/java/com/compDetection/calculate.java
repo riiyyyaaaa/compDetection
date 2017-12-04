@@ -9,7 +9,7 @@ import javax.swing.JFileChooser;
 public class calculate {
     public static final ImageUtility iu = new ImageUtility();
     public static final int upratio = 12000;
-    public static final int downratio = 10000;
+    public static final int downratio = 9000;
 
     public static void main() {
     }
@@ -56,7 +56,9 @@ public class calculate {
             } else if (repeat == 2) {
                 System.out.printf("down ");
                 //エッジが少なかった場合
-                ro -= 0.1;
+                if (repeatCount < 10) {
+                    ro -= 0.1;
+                }
                 up -= 10;
                 down -= 10;
 
@@ -121,9 +123,10 @@ public class calculate {
         int r = (int) ro;
         int u = (int) up;
         int d = (int) down;
+
         if (ro - r > 0) {
-            imagename = filename + "_" + String.valueOf(r) + "-" + String.valueOf(ro - r) + "_" + String.valueOf(u)
-                    + "_" + String.valueOf(d) + "_" + filename;
+            imagename = filename + "_" + String.valueOf(r) + "-" + String.format("%1$.2f", ro - r) + "_"
+                    + String.valueOf(u) + "_" + String.valueOf(d) + "_" + filename;
         } else {
             imagename = filename + "_" + String.valueOf(r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) + "_"
                     + filename;
@@ -429,7 +432,9 @@ public class calculate {
 
     }
 
-    //ヒストグラムと白黒値の比
+    /**
+     * ヒストグラムを作成するための配列
+     */
     public static int[] histogram(BufferedImage read) throws IOException {
         int w = read.getWidth();
         int h = read.getHeight();
@@ -453,7 +458,7 @@ public class calculate {
     }
 
     /**
-     * ヒストグラムの表示
+     * show histogram
      */
     public static void showHistogram(int[] histgram) {
         //show histogram

@@ -7,25 +7,32 @@ import javax.imageio.*;
 import java.awt.image.*;
 import java.awt.*;
 import javax.swing.JFileChooser;
+import java.util.*;
 
 /**
  * 検索対象の画像についてエッジのある範囲を保管(探索、走査)
+ * !!!!!!クエリ画像と検索される画像のサイズを合わせること!!!!!!!
  */
 public class searchPre {
     public static final int interval = 40; //探索点を置く間隔
-    public static final int w = 300; //めんどいので画像の横幅を定義しておく
+    //public static final int w = 200; //めんどいので画像の横幅を定義しておく
     public static final int ra = 16; //角度の分母。分子はπ
     public static final double up = 100; //上限値
     public static final double down = 20; //下限値
+    //public static ArrayList<Integer> rank = new ArrayList(); //一致度の高い上位10件
+    public static int[][] rank = new int[10][2];
+
     ImageUtility iu = new ImageUtility();
 
     public static void main(String[] args) throws IOException {
 
-        File file1 = new File("./seaTest.jpg");
+        File file1 = new File("./imgSea.jpg");
         File file2 = new File("./seaTest2.jpg");
         double[][][] point1 = extractFeature(file1);
+        int distance = 0;
+        int sumup = 0;//距離の平均をとるよう
 
-        for (int i = 0; i <= 156 * 5; i++) {
+        for (int i = 0; i < 156; i++) {
             System.out.println("\nnum: " + i);
             File file = new File("C:\\detectEdge\\edgetest2\\img (" + String.valueOf(i + 1) + ").jpg");
             JFileChooser jfilechooser = new JFileChooser();
@@ -38,10 +45,62 @@ public class searchPre {
             double[][][] point2 = extractFeature(file);
 
             File out1 = new File("C:\\detectEdge\\ruiji", "img" + String.valueOf(i + 1 + "__.jpg"));
-            BufferedImage image = drawStr(ImageIO.read(file), calcSimilarity(point1, point2));
+            BufferedImage image = ImageIO.read(file);
+            distance = (int) calcSimilarity2(point1, point2, image.getWidth());
+            sumup += distance;
+
+            int temp;
+            if (i < 10) {
+                rank[i][0] = i;
+                rank[i][1] = distance;
+
+                //データが10個揃ったところでソート
+                if (i == 9) {
+                    //降順にソート
+                    for (int j = 0; j < 9; j++) {
+                        for (int k = 9; k > j; k--) {
+                            if (rank[k][1] < rank[k - 1][1]) {
+                                temp = rank[k][1];
+                                rank[k][1] = rank[k - 1][1];
+                                rank[k - 1][1] = temp;
+
+                                temp = rank[k][0];
+                                rank[k][0] = rank[k - 1][0];
+                                rank[k - 1][0] = temp;
+                            }
+                        }
+                    }
+                }
+            } else {
+                //11以降のデータについて、配列の最後の要素より小さければ
+                if (distance <= rank[9][1]) {
+
+                    for (int j = 8; j >= 0; j--) {
+                        if (distance > rank[j][1]) {
+                            rank[j + 1][1] = distance;
+                            rank[j + 1][0] = i;
+
+                            break;
+                        } else if (j == 0) {
+                            rank[0][1] = distance;
+                            rank[0][0] = i;
+                        }
+                    }
+                }
+
+            }
+
+            image = drawStr(image, distance);
             ImageIO.write(image, "jpg", out1);
 
         }
+        //検索結果の表示
+        for (int i = 0; i < 10; i++) {
+            System.out.printf("距離:%d, 画像 C:\\detectEdge\\ruiji\\img%d__.jpg \n", rank[i][1], rank[i][0] + 1);
+        }
+
+        System.out.println("平均距離: " + sumup / 156);
+
         /*
         double[][][] point2 = extractFeature(file2);
         File file3 = new File("./tet.jpg");
@@ -77,7 +136,8 @@ public class searchPre {
         boolean notfind = true;
         int num = 0; //探索点のナンバリング
         //探索点（20*20）の用意. RGB値、距離、元の位置(ナンバリングしておく？)
-        double[][][] point = new double[((h / interval) - 1) * ((h / interval) - 1)][ra][3];
+        //double[][][] point = new double[((h / interval) - 1) * ((h / interval) - 1)][ra][3];
+        double[][][] point = new double[(h / interval) * (h / interval)][ra][3];
 
         System.out.println("h, w:" + h + "," + w);
 
@@ -85,7 +145,7 @@ public class searchPre {
         for (int y = interval; y < h - 1; y += interval) {
             for (int x = interval; x < w - 1; x += interval) {
                 for (int i = 0; i < ra; i++) {
-                    //1つの探索点から32方向に走査
+                    //1つの探索点からra.length方向に走査
                     int siX = (int) (Math.sqrt(2) * Math.cos(i * Math.PI / ra));
                     int siY = (int) (Math.sqrt(2) * Math.sin(i * Math.PI / ra));
                     int count = 0;
@@ -103,8 +163,8 @@ public class searchPre {
                         //System.out.printf("(%3d, %3d), ", (int) x1, (int) y1);
 
                         //RGB値255かx, y軸に接したら走査終了
-                        //KOKOKOKOKO=================================================
-                        if (c >= 100) {
+                        if (c > 0) {
+                            //System.out.println("num:" + num);
                             point[num][i][0] = 1; //探索成功
                             point[num][i][1] = c; //RGB値の保存
                             point[num][i][2] = Math.sqrt((x1 - x) * (x1 - x) + (y1 - y) * (y1 - y)); //ユークリッド距離
@@ -132,7 +192,7 @@ public class searchPre {
                 num++;
             }
         }
-        System.out.println("");
+        //System.out.println("");
 
         //特徴量の表示
         System.out.println("特徴量");
@@ -140,12 +200,12 @@ public class searchPre {
             //System.out.printf("%5d: ", i);
             for (int j = 0; j < ra; j++) {
                 if (point[i][j][0] == 0) {
-                    System.out.printf("  F  ");
+                    // System.out.printf("  F  ");
                 } else {
-                    System.out.printf("%5d", (int) point[i][j][2]);
+                    //System.out.printf("%5d", (int) point[i][j][2]);
                 }
             }
-            System.out.println("");
+            // System.out.println("");
 
         }
 
@@ -153,23 +213,21 @@ public class searchPre {
     }
 
     /**
-     * 点の探索範囲を計算
-     */
-    public static double calcRange(double[][][] point) {
-        double sum = 0;
-        return sum;
-    }
-
-    /**
      * 論文を参考にした類似度計算
      */
-    public static double calcSimilarity2(double[][][] point1, double[][][] point2) {
+    public static double calcSimilarity2(double[][][] point1, double[][][] point2, int size) {
         double similarity = 0; //類似度
-        double[] range1 = new double[((w / interval) - 1) * ((w / interval) - 1)]; //point1の各点の探索範囲
-        double[] range2 = new double[((w / interval) - 1) * ((w / interval) - 1)]; //point2の各点の探索範囲
+        int dotnum = ((size / interval) - 1) * ((size / interval) - 1);
+        double[] range1 = new double[dotnum]; //point1の各点の探索範囲
+        double[] range2 = new double[dotnum]; //point2の各点の探索範囲
+        int[] w1 = new int[dotnum]; //座標距離にかかる重み
+        int[] w2 = new int[dotnum];
+        int dmin = 20; //探索範囲の閾値
+        int dmax = 100;
+        int v1 = 0, v2 = 0;
 
         //探索範囲の計算
-        for (int i = 0; i < ((w / interval) - 1) * ((w / interval) - 1); i++) {
+        for (int i = 0; i < dotnum; i++) {
             range1[i] = 0;
             range2[i] = 0;
             for (int j = 0; j < ra; j++) {
@@ -177,7 +235,7 @@ public class searchPre {
                     //共に探索成功している場合
                     range1[i] += point1[i][j][2];
                     range2[i] += point2[i][j][2];
-                    System.out.printf(" %4.1f , %4.1f ", range1[i], range2[i]);
+                    //System.out.printf(" %4.1f , %4.1f ", range1[i], range2[i]);
                 } else {
                     //探索失敗している場合
                     System.out.printf("  F  ");
@@ -185,20 +243,64 @@ public class searchPre {
             }
         }
 
+        //座標距離にかかる重みの計算, 共に検索範囲の小さいものは重みを0
+        for (int i = 0; i < dotnum; i++) {
+            if (range1[i] > dmax && range2[i] > dmax) {
+                w1[i] = 2;
+            } else if (range1[i] < dmin && range2[i] < dmin) {
+                w1[i] = 0;
+            } else {
+                w1[i] = 1;
+            }
+            /*
+            
+            if (range2[i] > dmax) {
+                w2 = 2;
+            } else if (range2[i] < dmin) {
+                w2 = 0;
+            } else {
+                w2 = 1;
+            }
+            */
+        }
+
+        //類似度計算
+        v1 = 0;
+        v2 = 0;
+        for (int i = 0; i < dotnum; i++) {
+            for (int j = 0; j < ra; j++) {
+                if ((point1[i][j][0] != 0) && (point2[i][j][0] != 0)) {
+                    //共に探索成功している場合
+                    v1 += w1[i] * calcAbsol(point1[i][j][2], point2[i][j][2]);
+                    //System.out.printf(" %4.1f , %4.1f ", range1[i], range2[i]);
+                } else {
+                    //探索失敗している場合
+                    System.out.printf("  F  ");
+                }
+            }
+            if (w1[i] != 0) {
+                v2 += 1;
+            }
+        }
+        System.out.println("v1: " + v1 + "v2: " + v2);
+        similarity = v1 / (ra * v2);
+
+        System.out.println("類似度: " + similarity);
+
         return similarity;
     }
 
     /**
      * extractFeatureをもとに類似度計算を行う
      */
-    public static double calcSimilarity(double[][][] point1, double[][][] point2) {
+    public static double calcSimilarity(double[][][] point1, double[][][] point2, int size) {
         double similarity = 0;
         double sum = 0;
         double val = 0;
         double x = 0;
 
         System.out.println("\n類似度計算");
-        for (int i = 0; i < ((w / interval) - 1) * ((w / interval) - 1); i++) {
+        for (int i = 0; i < ((size / interval) - 1) * ((size / interval) - 1); i++) {
             for (int j = 0; j < ra; j++) {
                 /*
                 if (((point1[i][j][1] != 0) && (point2[i][j][1] == 0))
@@ -255,6 +357,7 @@ public class searchPre {
      * 文字列を画像に書き込む
      */
     public static BufferedImage drawStr(BufferedImage read, double value) {
+        int w = read.getWidth();
         Graphics graphics = read.createGraphics();
         graphics.setColor(Color.WHITE);
         graphics.drawString(String.valueOf(value), w - 50, w - 20);
