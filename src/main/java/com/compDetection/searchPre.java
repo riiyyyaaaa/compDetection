@@ -21,85 +21,106 @@ public class searchPre {
     public static final double down = 20; //下限値
     //public static ArrayList<Integer> rank = new ArrayList(); //一致度の高い上位10件
     public static int[][] rank = new int[10][2];
-
-    ImageUtility iu = new ImageUtility();
+    public static ImageUtility iu = new ImageUtility();
 
     public static void main(String[] args) throws IOException {
 
-        File file1 = new File("./imgSea.jpg");
-        File file2 = new File("./seaTest2.jpg");
-        double[][][] point1 = extractFeature(file1);
-        int distance = 0;
-        int sumup = 0;//距離の平均をとるよう
+        for (int count = 1; count < 156; count++) {
 
-        for (int i = 0; i < 156; i++) {
-            System.out.println("\nnum: " + i);
-            File file = new File("C:\\detectEdge\\edgetest2\\img (" + String.valueOf(i + 1) + ").jpg");
-            JFileChooser jfilechooser = new JFileChooser();
-            String filename = jfilechooser.getName(file1);
-            String filename2 = jfilechooser.getName(file);
+            String queryImage = "C:\\detectEdge\\edgetest2\\img (" + String.valueOf(count) + ").jpg";
 
-            System.out.println("filename is " + filename);
-            point1 = extractFeature(file1);
-            System.out.println("filename is " + filename2);
-            double[][][] point2 = extractFeature(file);
+            File file1 = new File(queryImage);
+            File file2 = new File("./seaTest2.jpg");
+            double[][][] point1 = extractFeature(file1);
+            int distance = 0;
+            int sumup = 0;//距離の平均をとるよう
 
-            File out1 = new File("C:\\detectEdge\\ruiji", "img" + String.valueOf(i + 1 + "__.jpg"));
-            BufferedImage image = ImageIO.read(file);
-            distance = (int) calcSimilarity2(point1, point2, image.getWidth());
-            sumup += distance;
+            for (int i = 0; i < 156; i++) {
+                //System.out.println("\nnum: " + i);
+                File file = new File("C:\\detectEdge\\edgetest2\\img (" + String.valueOf(i + 1) + ").jpg");
+                JFileChooser jfilechooser = new JFileChooser();
+                String filename = jfilechooser.getName(file1);
+                String filename2 = jfilechooser.getName(file);
 
-            int temp;
-            if (i < 10) {
-                rank[i][0] = i;
-                rank[i][1] = distance;
+                System.out.println("filename is " + filename);
+                point1 = extractFeature(file1);
+                System.out.println("filename is " + filename2);
+                double[][][] point2 = extractFeature(file);
 
-                //データが10個揃ったところでソート
-                if (i == 9) {
-                    //降順にソート
-                    for (int j = 0; j < 9; j++) {
-                        for (int k = 9; k > j; k--) {
-                            if (rank[k][1] < rank[k - 1][1]) {
-                                temp = rank[k][1];
-                                rank[k][1] = rank[k - 1][1];
-                                rank[k - 1][1] = temp;
+                File out1 = new File("C:\\detectEdge\\ruiji", "img" + String.valueOf(i + 1 + "__.jpg"));
+                BufferedImage image = ImageIO.read(file);
+                distance = (int) calcSimilarity2(point1, point2, image.getWidth());
+                sumup += distance;
 
-                                temp = rank[k][0];
-                                rank[k][0] = rank[k - 1][0];
-                                rank[k - 1][0] = temp;
+                int temp;
+                if (i < 10) {
+                    rank[i][0] = i;
+                    rank[i][1] = distance;
+
+                    //データが10個揃ったところでソート
+                    if (i == 9) {
+                        //降順にソート
+                        for (int j = 0; j < 9; j++) {
+                            for (int k = 9; k > j; k--) {
+                                if (rank[k][1] < rank[k - 1][1]) {
+                                    temp = rank[k][1];
+                                    rank[k][1] = rank[k - 1][1];
+                                    rank[k - 1][1] = temp;
+
+                                    temp = rank[k][0];
+                                    rank[k][0] = rank[k - 1][0];
+                                    rank[k - 1][0] = temp;
+                                }
                             }
                         }
                     }
-                }
-            } else {
-                //11以降のデータについて、配列の最後の要素より小さければ
-                if (distance <= rank[9][1]) {
+                } else {
+                    //11以降のデータについて、配列の最後の要素より小さければ
+                    if (distance <= rank[9][1]) {
 
-                    for (int j = 8; j >= 0; j--) {
-                        if (distance > rank[j][1]) {
-                            rank[j + 1][1] = distance;
-                            rank[j + 1][0] = i;
+                        for (int j = 8; j >= 0; j--) {
+                            if (distance > rank[j][1]) {
+                                rank[j + 1][1] = distance;
+                                rank[j + 1][0] = i;
 
-                            break;
-                        } else if (j == 0) {
-                            rank[0][1] = distance;
-                            rank[0][0] = i;
+                                break;
+                            } else if (j == 0) {
+                                rank[0][1] = distance;
+                                rank[0][0] = i;
+                            }
                         }
                     }
+
                 }
+
+                image = drawStr(image, distance);
+                ImageIO.write(image, "jpg", out1);
 
             }
 
-            image = drawStr(image, distance);
-            ImageIO.write(image, "jpg", out1);
+            String[] url = new String[10];
+            //検索結果の表示
+            for (int i = 0; i < 10; i++) {
+                System.out.printf("距離:%d, 画像 C:\\detectEdge\\ruiji\\img%d__.jpg \n", rank[i][1], rank[i][0] + 1);
+                url[i] = "C:\\photo\\" + String.valueOf(rank[i][0] + 1) + ".jpg";
+            }
 
-        }
-        //検索結果の表示
-        for (int i = 0; i < 10; i++) {
-            System.out.printf("距離:%d, 画像 C:\\detectEdge\\ruiji\\img%d__.jpg \n", rank[i][1], rank[i][0] + 1);
-        }
+            //結果を出力
+            File F = new File(url[0]);
+            BufferedImage Im = ImageIO.read(F);
+            File resultFile = new File("result" + String.valueOf(count) + ".jpg");
+            ImageIO.write(Im, "jpg", resultFile);
 
-        System.out.println("平均距離: " + sumup / 156);
+            for (int i = 1; i < 10; i++) {
+                Im = ImageIO.read(resultFile);
+                F = new File(url[i]);
+                BufferedImage im = ImageIO.read(F);
+                BufferedImage write = iu.outputResult(Im, im);
+                ImageIO.write(write, "jpg", resultFile);
+            }
+
+            System.out.println("平均距離: " + sumup / 156);
+        }
 
         /*
         double[][][] point2 = extractFeature(file2);
@@ -139,7 +160,7 @@ public class searchPre {
         //double[][][] point = new double[((h / interval) - 1) * ((h / interval) - 1)][ra][3];
         double[][][] point = new double[(h / interval) * (h / interval)][ra][3];
 
-        System.out.println("h, w:" + h + "," + w);
+        //System.out.println("h, w:" + h + "," + w);
 
         //探索点の放出(2値化、値の近似、省略は行わないとする,とりあえず)
         for (int y = interval; y < h - 1; y += interval) {
@@ -195,7 +216,7 @@ public class searchPre {
         //System.out.println("");
 
         //特徴量の表示
-        System.out.println("特徴量");
+        // System.out.println("特徴量");
         for (int i = 0; i < num; i++) {
             //System.out.printf("%5d: ", i);
             for (int j = 0; j < ra; j++) {
@@ -282,7 +303,7 @@ public class searchPre {
                 v2 += 1;
             }
         }
-        System.out.println("v1: " + v1 + "v2: " + v2);
+        System.out.println("v1: " + v1 + " v2: " + v2);
         similarity = v1 / (ra * v2);
 
         System.out.println("類似度: " + similarity);
