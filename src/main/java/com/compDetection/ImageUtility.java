@@ -94,6 +94,23 @@ public class ImageUtility {
         return write;
     }
 
+    /**
+     * 2つ画像を縦に並べた画像の作成
+     */
+    public static BufferedImage outputResultLongi(BufferedImage img1, BufferedImage img2) {
+        int w = img1.getWidth();
+        //int h = img1.getHeight();
+        if (img1.getWidth() < img2.getWidth()) {
+            w = img2.getWidth();
+        }
+        BufferedImage write = new BufferedImage(w, img1.getHeight() + img2.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics g = write.getGraphics();
+        g.drawImage(img1, 0, 0, null);
+        g.drawImage(img2, 0, img1.getHeight(), null);
+
+        return write;
+    }
+
     public static void main(String[] args) {
 
     }

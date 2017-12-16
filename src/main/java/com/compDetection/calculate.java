@@ -131,7 +131,8 @@ public class calculate {
             imagename = filename + "_" + String.valueOf(r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) + "_"
                     + filename;
         }
-        f2 = new File("C:\\detectEdge\\edgetest3", imagename);
+        //出力先フォルダを指定
+        f2 = new File("C:\\detectEdge\\searchedEdge", imagename);
         ImageIO.write(writeF, "jpg", f2);
 
         //File textfile = new File("c:\\detectEdge\\edgetext3.txt");

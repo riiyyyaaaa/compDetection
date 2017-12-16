@@ -19,15 +19,16 @@ public class searchPre {
     public static final int ra = 16; //角度の分母。分子はπ
     public static final double up = 100; //上限値
     public static final double down = 20; //下限値
+    public static final int imgnum = 32; //k検索される画像枚数
     //public static ArrayList<Integer> rank = new ArrayList(); //一致度の高い上位10件
     public static int[][] rank = new int[10][2];
     public static ImageUtility iu = new ImageUtility();
 
     public static void main(String[] args) throws IOException {
 
-        for (int count = 1; count < 156; count++) {
+        for (int count = 1; count <= imgnum; count++) {
 
-            String queryImage = "C:\\detectEdge\\edgetest2\\img (" + String.valueOf(count) + ").jpg";
+            String queryImage = "C:\\detectEdge\\queryImage\\img (" + String.valueOf(count) + ").jpg";
 
             File file1 = new File(queryImage);
             File file2 = new File("./seaTest2.jpg");
@@ -35,9 +36,9 @@ public class searchPre {
             int distance = 0;
             int sumup = 0;//距離の平均をとるよう
 
-            for (int i = 0; i < 156; i++) {
+            for (int i = 0; i < imgnum; i++) {
                 //System.out.println("\nnum: " + i);
-                File file = new File("C:\\detectEdge\\edgetest2\\img (" + String.valueOf(i + 1) + ").jpg");
+                File file = new File("C:\\detectEdge\\queryImage\\img (" + String.valueOf(i + 1) + ").jpg");
                 JFileChooser jfilechooser = new JFileChooser();
                 String filename = jfilechooser.getName(file1);
                 String filename2 = jfilechooser.getName(file);
@@ -47,7 +48,7 @@ public class searchPre {
                 System.out.println("filename is " + filename2);
                 double[][][] point2 = extractFeature(file);
 
-                File out1 = new File("C:\\detectEdge\\ruiji", "img" + String.valueOf(i + 1 + "__.jpg"));
+                File out1 = new File("C:\\detectEdge\\ruiji2", "img" + String.valueOf(i + 1 + "__.jpg"));
                 BufferedImage image = ImageIO.read(file);
                 distance = (int) calcSimilarity2(point1, point2, image.getWidth());
                 sumup += distance;
@@ -99,16 +100,26 @@ public class searchPre {
             }
 
             String[] url = new String[10];
+            String[] edgeurl = new String[10];
             //検索結果の表示
             for (int i = 0; i < 10; i++) {
-                System.out.printf("距離:%d, 画像 C:\\detectEdge\\ruiji\\img%d__.jpg \n", rank[i][1], rank[i][0] + 1);
-                url[i] = "C:\\photo\\" + String.valueOf(rank[i][0] + 1) + ".jpg";
+                System.out.printf("距離:%d, 画像 C:\\detectEdge\\seached\\img%d__.jpg \n", rank[i][1], rank[i][0] + 1);
+                //元画像のURI
+                url[i] = "C:\\detectEdge\\searched\\img (" + String.valueOf(rank[i][0] + 1) + ").jpg";
+                //元画像のエッジのURI
+                edgeurl[i] = "C:\\detectEdge\\queryImage\\img (" + String.valueOf(rank[i][0] + 1) + ").jpg";
             }
 
             //結果を出力
             File F = new File(url[0]);
             BufferedImage Im = ImageIO.read(F);
-            File resultFile = new File("result" + String.valueOf(count) + ".jpg");
+
+            File edgeF = new File(edgeurl[0]);
+            BufferedImage edgeIm = ImageIO.read(edgeF);
+            File resultEdge = new File("C:\\detectEdge\\resultImage\\edge" + String.valueOf(count) + ".jpg");
+            ImageIO.write(edgeIm, "jpg", resultEdge);
+
+            File resultFile = new File("C:\\detectEdge\\resultImage\\" + String.valueOf(count) + ".jpg");
             ImageIO.write(Im, "jpg", resultFile);
 
             for (int i = 1; i < 10; i++) {
@@ -116,10 +127,25 @@ public class searchPre {
                 F = new File(url[i]);
                 BufferedImage im = ImageIO.read(F);
                 BufferedImage write = iu.outputResult(Im, im);
+
+                edgeIm = ImageIO.read(resultEdge);
+                edgeF = new File(edgeurl[i]);
+                BufferedImage edgeim = ImageIO.read(edgeF);
+                BufferedImage writeedge = iu.outputResult(edgeIm, edgeim);
+
+                ImageIO.write(writeedge, "jpg", resultEdge);
+
                 ImageIO.write(write, "jpg", resultFile);
             }
 
-            System.out.println("平均距離: " + sumup / 156);
+            BufferedImage img1 = ImageIO.read(resultFile);
+            BufferedImage img2 = ImageIO.read(resultEdge);
+
+            BufferedImage resultImage = iu.outputResultLongi(img1, img2);
+
+            ImageIO.write(resultImage, "jpg", resultFile);
+
+            System.out.println("平均距離: " + sumup / imgnum);
         }
 
         /*

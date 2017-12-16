@@ -9,16 +9,18 @@ import javax.swing.JFileChooser;
 import javax.imageio.ImageIO;
 
 public class detectEdge {
-    public static double size = 200;
+    public static double size = 200; //リサイズ後の画像サイズ(px)
+    public static final int imnum = 32; //画像の数
 
     public static void main(String[] args) throws IOException {
         ImageUtility iu = new ImageUtility();
         int number = 1; //ファイルの読み込み順番
 
-        while (number <= 156) {
+        while (number <= imnum) {
             calculate cal = new calculate();
             //File f = new File("C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\4.jpg");
-            String str = "C:\\photo\\" + String.valueOf(number) + ".jpg";
+            //検索される画像のフォルダ指定
+            String str = "C:\\detectEdge\\searched\\img (" + String.valueOf(number) + ").jpg";
             File f = new File(str);
 
             System.out.println(str);
