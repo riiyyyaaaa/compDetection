@@ -55,7 +55,7 @@ public class searchPre {
 
                 int temp;
                 if (i < 10) {
-                    rank[i][0] = i;
+                    rank[i][0] = i + 1;
                     rank[i][1] = distance;
 
                     //データが10個揃ったところでソート
@@ -76,18 +76,43 @@ public class searchPre {
                         }
                     }
                 } else {
+                    int tempnum;
                     //11以降のデータについて、配列の最後の要素より小さければ
-                    if (distance <= rank[9][1]) {
+                    if (distance < rank[9][1]) {
 
                         for (int j = 8; j >= 0; j--) {
-                            if (distance > rank[j][1]) {
-                                rank[j + 1][1] = distance;
-                                rank[j + 1][0] = i;
+                            if (distance < rank[0][1]) {
+                                //０番目よりも小さい場合
 
-                                break;
-                            } else if (j == 0) {
+                                for (int k = 9; k > 0; k--) {
+                                    rank[k][0] = rank[k - 1][0];
+                                    rank[k][1] = rank[k - 1][1];
+                                }
+                                //応急処置
                                 rank[0][1] = distance;
-                                rank[0][0] = i;
+                                rank[0][0] = i + 1;
+                                break;
+
+                            } else if (distance >= rank[j][1]) {
+                                //9よりも小さくj番目よりも大きい場合
+                                if (j == 8) {
+                                    //j==8の時j=9に挿入
+                                    rank[j + 1][0] = i + 1;
+                                    rank[j + 1][1] = distance;
+                                    break;
+
+                                } else if (j < 8) {
+                                    //8以外の時
+                                    for (int k = 9; k > j + 1; k--) {
+                                        rank[k][0] = rank[k - 1][0];
+                                        rank[k][1] = rank[k - 1][1];
+                                    }
+                                    rank[j + 1][0] = i + 1;
+                                    rank[j + 1][1] = distance;
+
+                                    break;
+                                }
+
                             }
                         }
                     }
@@ -103,11 +128,11 @@ public class searchPre {
             String[] edgeurl = new String[10];
             //検索結果の表示
             for (int i = 0; i < 10; i++) {
-                System.out.printf("距離:%d, 画像 C:\\detectEdge\\seached\\img%d__.jpg \n", rank[i][1], rank[i][0] + 1);
+                System.out.printf("距離:%d, 画像 C:\\detectEdge\\seached\\img%d__.jpg \n", rank[i][1], rank[i][0]);
                 //元画像のURI
-                url[i] = "C:\\detectEdge\\searched\\img (" + String.valueOf(rank[i][0] + 1) + ").jpg";
+                url[i] = "C:\\detectEdge\\resizeImage\\img (" + String.valueOf(rank[i][0]) + ").jpg";
                 //元画像のエッジのURI
-                edgeurl[i] = "C:\\detectEdge\\queryImage\\img (" + String.valueOf(rank[i][0] + 1) + ").jpg";
+                edgeurl[i] = "C:\\detectEdge\\queryImage\\img (" + String.valueOf(rank[i][0]) + ").jpg";
             }
 
             //結果を出力
@@ -116,21 +141,26 @@ public class searchPre {
 
             File edgeF = new File(edgeurl[0]);
             BufferedImage edgeIm = ImageIO.read(edgeF);
+
             File resultEdge = new File("C:\\detectEdge\\resultImage\\edge" + String.valueOf(count) + ".jpg");
             ImageIO.write(edgeIm, "jpg", resultEdge);
 
             File resultFile = new File("C:\\detectEdge\\resultImage\\" + String.valueOf(count) + ".jpg");
             ImageIO.write(Im, "jpg", resultFile);
 
-            for (int i = 1; i < 10; i++) {
+            for (int i = 0; i < 9; i++) {
                 Im = ImageIO.read(resultFile);
-                F = new File(url[i]);
+                F = new File(url[i + 1]);
+                System.out.println(i + ": " + url[i + 1]);
                 BufferedImage im = ImageIO.read(F);
                 BufferedImage write = iu.outputResult(Im, im);
 
                 edgeIm = ImageIO.read(resultEdge);
-                edgeF = new File(edgeurl[i]);
+                edgeF = new File(edgeurl[i + 1]);
                 BufferedImage edgeim = ImageIO.read(edgeF);
+                //類似度の書き込み
+                edgeim = iu.drawStr(edgeim, (double) rank[i + 1][1], edgeim.getWidth());
+
                 BufferedImage writeedge = iu.outputResult(edgeIm, edgeim);
 
                 ImageIO.write(writeedge, "jpg", resultEdge);
@@ -145,7 +175,7 @@ public class searchPre {
 
             ImageIO.write(resultImage, "jpg", resultFile);
 
-            System.out.println("平均距離: " + sumup / imgnum);
+            System.out.println("平均距離: " + sumup / (imgnum - 1));
         }
 
         /*
@@ -160,7 +190,7 @@ public class searchPre {
         //calcSimilarity(point1, point1);
         drawStr(ImageIO.read(file2), calcSimilarity(point1, point2));
         File out1 = new File("im1.jpg");
-        ImageIO.write(drawStr(ImageIO.read(file2), calcSimilarity(point1, point2)), "jpg", out1);
+        ImageIO.write(drawStr(ImageIO.read(file2), calcSimilarity(point1, poin)t2), "jpg", out1);
         
         //calcSimilarity(point1, point3);
         drawStr(ImageIO.read(file3), calcSimilarity(point1, point3));
@@ -267,8 +297,8 @@ public class searchPre {
         int dotnum = ((size / interval) - 1) * ((size / interval) - 1);
         double[] range1 = new double[dotnum]; //point1の各点の探索範囲
         double[] range2 = new double[dotnum]; //point2の各点の探索範囲
-        int[] w1 = new int[dotnum]; //座標距離にかかる重み
-        int[] w2 = new int[dotnum];
+        double[] w1 = new double[dotnum]; //座標距離にかかる重み
+        double[] w2 = new double[dotnum];
         int dmin = 20; //探索範囲の閾値
         int dmax = 100;
         int v1 = 0, v2 = 0;
@@ -293,9 +323,11 @@ public class searchPre {
         //座標距離にかかる重みの計算, 共に検索範囲の小さいものは重みを0
         for (int i = 0; i < dotnum; i++) {
             if (range1[i] > dmax && range2[i] > dmax) {
-                w1[i] = 2;
+                w1[i] = 0.5;
+                System.out.println("ok");
             } else if (range1[i] < dmin && range2[i] < dmin) {
                 w1[i] = 0;
+                System.out.println("\n\n\n!!!small!!!\n\n\ns");
             } else {
                 w1[i] = 1;
             }

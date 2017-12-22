@@ -8,8 +8,8 @@ import javax.swing.JFileChooser;
 
 public class calculate {
     public static final ImageUtility iu = new ImageUtility();
-    public static final int upratio = 12000;
-    public static final int downratio = 9000;
+    public static final int upratio = 10000;
+    public static final int downratio = 8000;
 
     public static void main() {
     }
@@ -17,7 +17,7 @@ public class calculate {
     /**
      * cannyエッジ検出
      */
-    public static void canny(File file, double ro, double up, double down) throws IOException {
+    public static void canny(File file, double ro, double up, double down, String filenumber) throws IOException {
 
         BufferedImage read = ImageIO.read(file);
         int cal = 0;
@@ -131,10 +131,13 @@ public class calculate {
             imagename = filename + "_" + String.valueOf(r) + "_" + String.valueOf(u) + "_" + String.valueOf(d) + "_"
                     + filename;
         }
-        //出力先フォルダを指定
+        //出力先(計算した値を名前にしたバージョン)フォルダを指定
         f2 = new File("C:\\detectEdge\\searchedEdge", imagename);
-        ImageIO.write(writeF, "jpg", f2);
+        //出力先フォルダ(ナンバリング)を指定
+        File fnumber = new File("C:\\detectEdge\\queryImage", "img (" + filenumber +").jpg");
 
+        ImageIO.write(writeF, "jpg", f2);
+        ImageIO.write(writeF, "jpg", fnumber);
         //File textfile = new File("c:\\detectEdge\\edgetext3.txt");
         //FileWriter filewriter = new FileWriter(textfile, true);
         //filewriter.write(",   " + imagename + ": " + String.valueOf(judgeHistogram(histogram(f2))));
@@ -728,20 +731,20 @@ public class calculate {
     //ガウシアンフィルタをｘ方向に一次微分: Gx(画面の明度をかなり上げないと見えない)
     /*
     for (int y = 0; y < filter.length - 1; y++) {
-    
+
         for (int x = 0; x < filter.length - 1; x++) {
-    
+
             filterX[y][x] = -filter[y][x + 1] + filter[y][x];
             System.out.printf("%.3f", filterX[x][y]);
         }
         System.out.print("\n");
     }
-    
+
     //ガウシアンフィルタをy方向に一次微分: Gy
     for (int y = 0; y < filter.length - 1; y++) {
-    
+
         for (int x = 0; x < filter.length - 1; x++) {
-    
+
             filterY[y][x] = -filter[y + 1][x] + filter[y][x];
             System.out.printf(" %.3f", filterY[x][y]);
         }

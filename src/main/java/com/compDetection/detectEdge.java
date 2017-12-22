@@ -30,6 +30,9 @@ public class detectEdge {
             BufferedImage read = ImageIO.read(f);
             int w = read.getWidth(), h = read.getHeight();
 
+            //リサイズ後の画像の保存先
+            File resizeImage = new File("C:\\detectEdge\\resizeImage\\img (" + String.valueOf(number) + ").jpg");
+
             //resize an image
             if (w != size || h != size) {
                 //System.out.println("w, h, w*h, scale:" + w + ", " + h + ", " + w*h + "," + (double)80000/(h*w));
@@ -38,11 +41,14 @@ public class detectEdge {
                 BufferedImage read2 = ImageIO.read(f2);
                 //System.out.println(read2.getWidth() + ", " + read2.getHeight());
 
+                //リサイズ後の画像の出力
+                ImageIO.write(read2, "jpg", resizeImage);
+
                 //detect edge
                 f2 = cal.Mono(f2);
                 //cal.canny(f2, 0.5, 100, 50);
                 //cal.canny(f2, 0.5, 150, 100);
-                cal.canny(f2, 1, 100, 50);
+                cal.canny(f2, 1, 100, 50, String.valueOf(number));
                 //cal.canny(f2, 1, 150, 100);
                 //cal.canny(f2, 1.5, 100, 50);
                 //cal.canny(f2, 1.5, 150, 100);
@@ -51,13 +57,15 @@ public class detectEdge {
                 File f2 = f;
                 BufferedImage read2 = ImageIO.read(f2);
                 System.out.println(read2.getWidth() + ", " + read2.getHeight());
+                //リサイズ後の画像の出力
+                ImageIO.write(read2, "jpg", resizeImage);
 
                 //detect edge
                 File f3 = cal.Mono(f2);
                 //cal.canny(f3, 0.5, 100, 50);
                 //cal.canny(f3, 0.5, 150, 100);
 
-                cal.canny(f3, 1, 100, 50);
+                cal.canny(f3, 1, 100, 50, String.valueOf(number));
                 //cal.canny(f3, 1, 150, 100);
                 //cal.canny(f3, 1.5, 100, 50);
                 //cal.canny(f3, 1.5, 150, 100);
@@ -83,7 +91,7 @@ public class detectEdge {
         }
         File f2 = new File("test50.jpg");
         ImageIO.write(write, "jpg", f2);
-        
+
         //test
         BufferedImage write2 = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < 100; i++) {
@@ -98,7 +106,7 @@ public class detectEdge {
         }
         File f3 = new File("test100.jpg");
         ImageIO.write(write, "jpg", f2);
-        
+
         //cal.GaussianFilter();
         // Convolution con = new Convolution();
         //cal.monoGaussianFilter(f);
@@ -110,7 +118,7 @@ public class detectEdge {
         //ImageIO.write(write, "png", f2);
         //l.canny(cal.Mono(f), 1, 100, 50);
         //cal.specifyPosition(1, 1);
-        
+
         */
     }
 
