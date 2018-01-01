@@ -19,7 +19,7 @@ public class searchPre {
     public static final int ra = 16; //角度の分母。分子はπ
     public static final double up = 100; //上限値
     public static final double down = 20; //下限値
-    public static final int imgnum = 32; //k検索される画像枚数
+    public static final int imgnum = 35; //k検索される画像枚数
     //public static ArrayList<Integer> rank = new ArrayList(); //一致度の高い上位10件
     public static int[][] rank = new int[10][2];
     public static ImageUtility iu = new ImageUtility();
@@ -128,7 +128,7 @@ public class searchPre {
             String[] edgeurl = new String[10];
             //検索結果の表示
             for (int i = 0; i < 10; i++) {
-                System.out.printf("距離:%d, 画像 C:\\detectEdge\\seached\\img%d__.jpg \n", rank[i][1], rank[i][0]);
+                System.out.printf("距離:%d, 画像 C:\\detectEdge\\seached2\\img%d__.jpg \n", rank[i][1], rank[i][0]);
                 //元画像のURI
                 url[i] = "C:\\detectEdge\\resizeImage\\img (" + String.valueOf(rank[i][0]) + ").jpg";
                 //元画像のエッジのURI
@@ -142,10 +142,10 @@ public class searchPre {
             File edgeF = new File(edgeurl[0]);
             BufferedImage edgeIm = ImageIO.read(edgeF);
 
-            File resultEdge = new File("C:\\detectEdge\\resultImage\\edge" + String.valueOf(count) + ".jpg");
+            File resultEdge = new File("C:\\detectEdge\\resultImage2\\edge" + String.valueOf(count) + ".jpg");
             ImageIO.write(edgeIm, "jpg", resultEdge);
 
-            File resultFile = new File("C:\\detectEdge\\resultImage\\" + String.valueOf(count) + ".jpg");
+            File resultFile = new File("C:\\detectEdge\\resultImage2\\" + String.valueOf(count) + ".jpg");
             ImageIO.write(Im, "jpg", resultFile);
 
             for (int i = 0; i < 9; i++) {
@@ -301,7 +301,7 @@ public class searchPre {
         double[] w2 = new double[dotnum];
         int dmin = 20; //探索範囲の閾値
         int dmax = 100;
-        int v1 = 0, v2 = 0;
+        double v1 = 0, v2 = 0;
 
         //探索範囲の計算
         for (int i = 0; i < dotnum; i++) {

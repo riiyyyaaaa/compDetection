@@ -111,6 +111,30 @@ public class ImageUtility {
         return write;
     }
 
+    /**
+     * 2値画像の反転
+     */
+    public static BufferedImage revMono(BufferedImage img) {
+        int val = 0;
+        BufferedImage write = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+        for (int i = 0; i < img.getHeight(); i++) {
+            for (int j = 0; j < img.getWidth(); j++) {
+                int c = img.getRGB(j, i);
+                int r = r(c);
+                if (r >= 255 / 2) {
+                    val = 255 - r;
+                } else {
+                    val = r - 255;
+                }
+                int rgb = rgb(val, val, val);
+                write.setRGB(j, i, rgb);
+            }
+        }
+
+        return write;
+    }
+
     public static void main(String[] args) {
 
     }

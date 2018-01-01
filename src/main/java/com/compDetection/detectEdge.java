@@ -10,7 +10,7 @@ import javax.imageio.ImageIO;
 
 public class detectEdge {
     public static double size = 200; //リサイズ後の画像サイズ(px)
-    public static final int imnum = 32; //画像の数
+    public static final int imnum = 35; //画像の数
 
     public static void main(String[] args) throws IOException {
         ImageUtility iu = new ImageUtility();
@@ -20,7 +20,7 @@ public class detectEdge {
             calculate cal = new calculate();
             //File f = new File("C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\4.jpg");
             //検索される画像のフォルダ指定
-            String str = "C:\\detectEdge\\searched\\img (" + String.valueOf(number) + ").jpg";
+            String str = "C:\\detectEdge\\searched2\\img (" + String.valueOf(number) + ").jpg";
             File f = new File(str);
 
             System.out.println(str);
@@ -91,7 +91,7 @@ public class detectEdge {
         }
         File f2 = new File("test50.jpg");
         ImageIO.write(write, "jpg", f2);
-
+        
         //test
         BufferedImage write2 = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < 100; i++) {
@@ -106,7 +106,7 @@ public class detectEdge {
         }
         File f3 = new File("test100.jpg");
         ImageIO.write(write, "jpg", f2);
-
+        
         //cal.GaussianFilter();
         // Convolution con = new Convolution();
         //cal.monoGaussianFilter(f);
@@ -118,7 +118,7 @@ public class detectEdge {
         //ImageIO.write(write, "png", f2);
         //l.canny(cal.Mono(f), 1, 100, 50);
         //cal.specifyPosition(1, 1);
-
+        
         */
     }
 
