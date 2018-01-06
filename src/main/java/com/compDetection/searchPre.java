@@ -18,7 +18,7 @@ public class searchPre {
     //public static final int w = 200; //めんどいので画像の横幅を定義しておく
     public static final int ra = 16; //角度の分母。分子はπ
     public static final double up = 100; //上限値
-    public static final double down = 20; //下限値
+    public static final double down = 20; //下限値 初期値20
     public static final int imgnum = 35; //k検索される画像枚数
     //public static ArrayList<Integer> rank = new ArrayList(); //一致度の高い上位10件
     public static int[][] rank = new int[10][2];
@@ -34,7 +34,7 @@ public class searchPre {
             File file2 = new File("./seaTest2.jpg");
             double[][][] point1 = extractFeature(file1);
             int distance = 0;
-            int sumup = 0;//距離の平均をとるよう
+            int sumup = 0;//距離の平均をとる用
 
             for (int i = 0; i < imgnum; i++) {
                 //System.out.println("\nnum: " + i);
@@ -135,17 +135,17 @@ public class searchPre {
                 edgeurl[i] = "C:\\detectEdge\\queryImage\\img (" + String.valueOf(rank[i][0]) + ").jpg";
             }
 
-            //結果を出力
+            //上位9件の結果を出力
             File F = new File(url[0]);
             BufferedImage Im = ImageIO.read(F);
 
             File edgeF = new File(edgeurl[0]);
             BufferedImage edgeIm = ImageIO.read(edgeF);
 
-            File resultEdge = new File("C:\\detectEdge\\resultImage2\\edge" + String.valueOf(count) + ".jpg");
+            File resultEdge = new File("C:\\detectEdge\\resultImage3\\edge" + String.valueOf(count) + ".jpg");
             ImageIO.write(edgeIm, "jpg", resultEdge);
 
-            File resultFile = new File("C:\\detectEdge\\resultImage2\\" + String.valueOf(count) + ".jpg");
+            File resultFile = new File("C:\\detectEdge\\resultImage3\\" + String.valueOf(count) + ".jpg");
             ImageIO.write(Im, "jpg", resultFile);
 
             for (int i = 0; i < 9; i++) {
@@ -174,6 +174,17 @@ public class searchPre {
             BufferedImage resultImage = iu.outputResultLongi(img1, img2);
 
             ImageIO.write(resultImage, "jpg", resultFile);
+
+            //上位5件の結果を出力
+            File result5file = new File(url[1]);
+            BufferedImage result5img = ImageIO.read(result5file);
+            for (int i = 2; i < 6; i++) {
+                F = new File(url[i + 1]);
+                BufferedImage nextimg = ImageIO.read(F);
+                result5img = iu.outputResult(result5img, nextimg);
+            }
+            File result5File = new File("C:\\detectEdge\\resultImage3\\rank5_" + String.valueOf(count) + ".jpg");
+            ImageIO.write(result5img, "jpg", result5File);
 
             System.out.println("平均距離: " + sumup / (imgnum - 1));
         }

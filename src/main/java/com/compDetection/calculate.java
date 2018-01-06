@@ -8,8 +8,8 @@ import javax.swing.JFileChooser;
 
 public class calculate {
     public static final ImageUtility iu = new ImageUtility();
-    public static final int upratio = 10000;
-    public static final int downratio = 8000;
+    public static final int upratio = 10000; //初期値1200
+    public static final int downratio = 8000; //初期値1000
 
     public static void main() {
     }
@@ -49,6 +49,7 @@ public class calculate {
             if (repeat == 1) {
                 System.out.printf("up ");
                 //エッジが多かった場合
+
                 ro += 0.1;
                 up += 10;
                 down += 10;
@@ -109,8 +110,10 @@ public class calculate {
             //writeF = tranc2Value(writeF);
 
             //画像に白の割合を描画
-            int[] his = histogram(writeF);
-            int value = whiteRatio(his);
+            //int[] his = histogram(writeF);
+            //int value = whiteRatio(his);
+            int value = countEdge(writeF);
+            System.out.println("edge number:" + value);
             repeat = edgeVal(value);
             //writeF = iu.drawStr(writeF, value, read.getWidth());
 
@@ -134,7 +137,7 @@ public class calculate {
         //出力先(計算した値を名前にしたバージョン)フォルダを指定
         f2 = new File("C:\\detectEdge\\searchedEdge", imagename);
         //出力先フォルダ(ナンバリング)を指定
-        File fnumber = new File("C:\\detectEdge\\queryImage", "img (" + filenumber +").jpg");
+        File fnumber = new File("C:\\detectEdge\\queryImage", "img (" + filenumber + ").jpg");
 
         ImageIO.write(writeF, "jpg", f2);
         ImageIO.write(writeF, "jpg", fnumber);
@@ -462,6 +465,27 @@ public class calculate {
     }
 
     /**
+     * グレースケール画像を二値化してエッジの数を数え上げる
+     */
+    public static int countEdge(BufferedImage read) throws IOException {
+        int w = read.getWidth();
+        int h = read.getHeight();
+        BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        int edgenum = 0;
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int c = iu.r(read.getRGB(x, y));
+                //System.out.println(c);
+                if (c != 0) {
+                    edgenum++;
+                }
+            }
+        }
+        return edgenum;
+    }
+
+    /**
      * show histogram
      */
     public static void showHistogram(int[] histgram) {
@@ -493,7 +517,9 @@ public class calculate {
         int ratio = 0;
 
         for (int i = 0; i <= 255 / 15; i++) {
-            ratio += his[i] * i;
+            if (i != 255 / 15) {
+                ratio += i * his[i];
+            }
         }
 
         System.out.println("white ratio: " + ratio);
@@ -731,20 +757,20 @@ public class calculate {
     //ガウシアンフィルタをｘ方向に一次微分: Gx(画面の明度をかなり上げないと見えない)
     /*
     for (int y = 0; y < filter.length - 1; y++) {
-
+    
         for (int x = 0; x < filter.length - 1; x++) {
-
+    
             filterX[y][x] = -filter[y][x + 1] + filter[y][x];
             System.out.printf("%.3f", filterX[x][y]);
         }
         System.out.print("\n");
     }
-
+    
     //ガウシアンフィルタをy方向に一次微分: Gy
     for (int y = 0; y < filter.length - 1; y++) {
-
+    
         for (int x = 0; x < filter.length - 1; x++) {
-
+    
             filterY[y][x] = -filter[y + 1][x] + filter[y][x];
             System.out.printf(" %.3f", filterY[x][y]);
         }

@@ -44,6 +44,17 @@ public class detectEdge {
                 //リサイズ後の画像の出力
                 ImageIO.write(read2, "jpg", resizeImage);
 
+                /*
+                
+                //画像に平滑化フィルタをかける
+                double ro = 1;
+                double filter[][] = cal.Gfilter(ro);
+                BufferedImage writeF = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+                writeF = cal.convo(read2, filter);
+                ImageIO.write(writeF, "jpg", f2);
+                
+                */
+
                 //detect edge
                 f2 = cal.Mono(f2);
                 //cal.canny(f2, 0.5, 100, 50);
@@ -59,6 +70,15 @@ public class detectEdge {
                 System.out.println(read2.getWidth() + ", " + read2.getHeight());
                 //リサイズ後の画像の出力
                 ImageIO.write(read2, "jpg", resizeImage);
+
+                /*
+                //画像に平滑化フィルタをかける
+                double ro = 1.3;
+                double filter[][] = cal.Gfilter(ro);
+                BufferedImage writeF = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+                writeF = cal.convo(read2, filter);
+                ImageIO.write(writeF, "jpg", f2);
+                */
 
                 //detect edge
                 File f3 = cal.Mono(f2);
