@@ -8,8 +8,8 @@ import javax.swing.JFileChooser;
 
 public class calculate {
     public static final ImageUtility iu = new ImageUtility();
-    public static final int upratio = 10000; //初期値1200
-    public static final int downratio = 8000; //初期値1000
+    public static final int upratio = 5000; //初期値1200
+    public static final int downratio = 500; //初期値1000
 
     public static void main() {
     }
@@ -47,15 +47,14 @@ public class calculate {
 
             //repeatの値によって上限値下限値を変更
             if (repeat == 1) {
-                System.out.printf("up ");
+                System.out.printf("too much ");
                 //エッジが多かった場合
-
                 ro += 0.1;
                 up += 10;
                 down += 10;
 
             } else if (repeat == 2) {
-                System.out.printf("down ");
+                System.out.printf("not enough ");
                 //エッジが少なかった場合
                 if (repeatCount < 10) {
                     ro -= 0.1;
@@ -89,8 +88,6 @@ public class calculate {
             writeDelFy = convo(writeF, pFilterY);
             File fDely = new File("DelFy.jpg");
             //ImageIO.write(writeDelFy, "jpg", fDely);
-
-            //System.out.println("+++++++++++finish!!!++++++++++");
 
             //差分
             sabun(writeDelFx, writeDelFy);

@@ -6,6 +6,9 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
+
+import org.bytedeco.javacpp.avcodec.AVCodecContext.Get_buffer2_AVCodecContext_AVFrame_int;
+
 import javax.imageio.ImageIO;
 
 public class detectEdge {
@@ -39,21 +42,19 @@ public class detectEdge {
                 System.out.println("Start Resize");
                 File f2 = iu.scaleImage(f, (double) size / w, (double) size / h);
                 BufferedImage read2 = ImageIO.read(f2);
+                System.out.println("\nRGB: " + (int) read2.getRGB(0, 0) + "\n");
                 //System.out.println(read2.getWidth() + ", " + read2.getHeight());
 
                 //リサイズ後の画像の出力
                 ImageIO.write(read2, "jpg", resizeImage);
 
-                /*
-                
                 //画像に平滑化フィルタをかける
                 double ro = 1;
                 double filter[][] = cal.Gfilter(ro);
                 BufferedImage writeF = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+
                 writeF = cal.convo(read2, filter);
                 ImageIO.write(writeF, "jpg", f2);
-                
-                */
 
                 //detect edge
                 f2 = cal.Mono(f2);
@@ -71,14 +72,12 @@ public class detectEdge {
                 //リサイズ後の画像の出力
                 ImageIO.write(read2, "jpg", resizeImage);
 
-                /*
                 //画像に平滑化フィルタをかける
                 double ro = 1.3;
                 double filter[][] = cal.Gfilter(ro);
                 BufferedImage writeF = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
                 writeF = cal.convo(read2, filter);
                 ImageIO.write(writeF, "jpg", f2);
-                */
 
                 //detect edge
                 File f3 = cal.Mono(f2);
