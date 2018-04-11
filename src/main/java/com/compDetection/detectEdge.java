@@ -7,7 +7,7 @@ import java.io.*;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
 
-import org.bytedeco.javacpp.avcodec.AVCodecContext.Get_buffer2_AVCodecContext_AVFrame_int;
+//import org.bytedeco.javacpp.avcodec.AVCodecContext.Get_buffer2_AVCodecContext_AVFrame_int;
 
 import javax.imageio.ImageIO;
 
@@ -21,7 +21,6 @@ public class detectEdge {
 
         while (number <= imnum) {
             calculate cal = new calculate();
-            //File f = new File("C:\\Users\\riya\\Documents\\compDetection\\src\\main\\java\\com\\compDetection\\4.jpg");
             //検索される画像のフォルダ指定
             String str = "C:\\detectEdge\\searched2\\img (" + String.valueOf(number) + ").jpg";
             File f = new File(str);
