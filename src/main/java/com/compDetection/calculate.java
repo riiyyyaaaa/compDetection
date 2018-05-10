@@ -462,6 +462,17 @@ public class calculate {
     }
 
     /**
+     * 輪郭追跡
+     */
+    public static BufferedImage trackEdge(BufferedImage read) throws IOException {
+        int w = read.getWidth();
+        int h = read.getHeight();
+        BufferedImage write = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+
+        return write;
+    }
+
+    /**
      * グレースケール画像を二値化してエッジの数を数え上げる
      */
     public static int countEdge(BufferedImage read) throws IOException {
