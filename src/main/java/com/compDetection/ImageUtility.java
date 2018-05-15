@@ -45,9 +45,9 @@ public class ImageUtility {
         return a << 24 | r << 16 | g << 8 | b;
     }
 
-    //画像を縮小, scale で x, y のサイズ変更。x : y = 1 : 1
+    // 画像を縮小, scale で x, y のサイズ変更。x : y = 1 : 1
     public static File scaleImage(File in, double scaleX, double scaleY) throws IOException {
-        //System.out.println("scale is " + scale);
+        // System.out.println("scale is " + scale);
         BufferedImage org = ImageIO.read(in);
         ImageFilter filter = new AreaAveragingScaleFilter((int) (org.getWidth() * scaleX),
                 (int) (org.getHeight() * scaleY));
@@ -55,7 +55,8 @@ public class ImageUtility {
         String filename = filechooser.getName(in);
         ImageProducer p = new FilteredImageSource(org.getSource(), filter);
         java.awt.Image dstImage = Toolkit.getDefaultToolkit().createImage(p);
-        //BufferedImage dst = new BufferedImage(dstImage.getWidth(null), dstImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+        // BufferedImage dst = new BufferedImage(dstImage.getWidth(null),
+        // dstImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
         BufferedImage dst = new BufferedImage(dstImage.getWidth(null), dstImage.getHeight(null),
                 BufferedImage.TYPE_INT_RGB);
         Graphics2D g = dst.createGraphics();
@@ -65,6 +66,41 @@ public class ImageUtility {
         ImageIO.write(dst, "jpg", out);
 
         return out;
+    }
+
+    /**
+     * カラーs画像をモノクロで返却
+     */
+    public static File Mono(File file) throws IOException {
+        BufferedImage readImage = ImageIO.read(file);
+        int w = readImage.getWidth(), h = readImage.getHeight();
+        BufferedImage writeImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        // ImageUtility iu = new ImageUtility();
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                // ピクセル値を取得
+                int c = readImage.getRGB(x, y);
+                // 0.299や0.587といった値はモノクロ化の定数値
+                int mono = (int) (0.299 * r(c) + 0.587 * g(c) + 0.114 * b(c));
+                // モノクロ化したピクセル値をint値に変換
+                int rgb = (a(c) << 24) + (mono << 16) + (mono << 8) + mono;
+                writeImage.setRGB(x, y, rgb);
+            }
+        }
+        // イメージをファイルに出力する
+        JFileChooser jfilechooser = new JFileChooser();
+        String filename = jfilechooser.getName(file);
+        File file2 = new File(filename);
+        ImageIO.write(writeImage, "jpg", file2);
+
+        return file2;
+    }
+
+    static BufferedImage toMono(BufferedImage src) {
+        BufferedImage dist = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        dist.getGraphics().drawImage(src, 0, 0, null);
+        return dist;
     }
 
     /**
@@ -99,7 +135,7 @@ public class ImageUtility {
      */
     public static BufferedImage outputResultLongi(BufferedImage img1, BufferedImage img2) {
         int w = img1.getWidth();
-        //int h = img1.getHeight();
+        // int h = img1.getHeight();
         if (img1.getWidth() < img2.getWidth()) {
             w = img2.getWidth();
         }
