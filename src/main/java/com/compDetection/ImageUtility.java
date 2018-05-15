@@ -69,7 +69,7 @@ public class ImageUtility {
     }
 
     /**
-     * カラーs画像をモノクロで返却
+     * カラー画像をモノクロで返却
      */
     public static File Mono(File file) throws IOException {
         BufferedImage readImage = ImageIO.read(file);

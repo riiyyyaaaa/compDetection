@@ -15,7 +15,7 @@ public class dividImage extends JFrame {
     public static void main(String[] args) throws IOException {
         String dir = "C:\\detectEdge\\fl.jpg";
         // 画像をモノクロで出力
-        File file = new File(dir);
+        File file = iu.Mono(new File(dir));
         BufferedImage read = ImageIO.read(file);
         int colorF[][] = extrColorF(intoBlock(read));
 
@@ -24,6 +24,7 @@ public class dividImage extends JFrame {
         // System.out.println(colorF[i][0]);
         // }
         outputBlock(colorF);
+        paintBlock(colorF);
         // new dividImage(colorF);
 
     }
@@ -89,7 +90,7 @@ public class dividImage extends JFrame {
         for (int i = 0; i < num * bsize; i++) {
             for (int j = 0; j < num * bsize; j++) {
                 // System.out.println("(i,j) = (" + i + "," + j + ")");
-                numB = (int) (i / (bsize)) * 4 + (int) (j / (bsize));
+                numB = (int) (i / (bsize)) * num + (int) (j / (bsize));
                 // System.out.print((int) (i / (bsize)) * 4 + (int) (j / (bsize)) + " ");
 
                 output.setRGB(j, i, iu.argb(0, block[numB][0], block[numB][1], block[numB][2]));
@@ -101,6 +102,60 @@ public class dividImage extends JFrame {
         ImageIO.write(output, "jpg", file);
 
         return output;
+    }
+
+    /**
+     * ブロックごとの数値から画像全体でのブロックの平均値(モノクロ)を求める 新たな配列ブロックにブロックの値が平均以上であれば1,
+     * 平均以下であれば-1としていれていく
+     */
+    public static int[] aveBlock(int[][] block) {
+        int ave = 0;
+        int[] resultBlock = new int[num * num];
+
+        for (int i = 0; i < block.length; i++) {
+            // モノクロ画像であればRGBのうち一つでいい
+            ave += block[i][0];
+        }
+        ave /= num * num;
+
+        for (int i = 0; i < block.length; i++) {
+            if (block[i][0] > ave) {
+                resultBlock[i] = 1;
+            } else {
+                resultBlock[i] = -1;
+            }
+            System.out.print(resultBlock[i]);
+        }
+        System.out.println();
+        return resultBlock;
+    }
+
+    /**
+     * aveBlockから得られた配列を基に画像を1, -1で塗分け
+     */
+    public static void paintBlock(int[][] block) throws IOException {
+        int[] resultBlock = aveBlock(block);
+        int bsize = 20;
+        int numB = 0;
+        BufferedImage output = new BufferedImage(num * bsize, num * bsize, BufferedImage.TYPE_INT_RGB);
+
+        for (int i = 0; i < num * bsize; i++) {
+            for (int j = 0; j < num * bsize; j++) {
+                numB = (int) (i / (bsize)) * num + (int) (j / (bsize));
+                if (resultBlock[numB] == 1) {
+                    output.setRGB(j, i, iu.argb(0, 0, 0, 0));
+                    System.out.print("k" + numB);
+                } else {
+                    output.setRGB(j, i, iu.argb(0, 255, 255, 255));
+                    System.out.print("w" + numB);
+                }
+
+            }
+            System.out.println();
+        }
+        File file = new File("bockImageMono.jpg");
+        ImageIO.write(output, "jpg", file);
+
     }
 
     // /**
