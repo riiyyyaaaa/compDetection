@@ -3,29 +3,61 @@ package com.compDetection;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.security.interfaces.RSAMultiPrimePrivateCrtKey;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import java.util.*;
+import javax.swing.JFileChooser;
 
 public class dividImage extends JFrame {
     public static final ImageUtility iu = new ImageUtility();
-    public static final int num = 4; // 分割するブロックの数(1辺)
-    // Graphics g;
+    public static final int num = 12; // 分割するブロックの数(1辺)
 
     public static void main(String[] args) throws IOException {
-        String dir = "C:\\detectEdge\\fl.jpg";
-        // 画像をモノクロで出力
-        File file = iu.Mono(new File(dir));
-        BufferedImage read = ImageIO.read(file);
-        int colorF[][] = extrColorF(intoBlock(read));
+        // String dir = "C:\\detectEdge\\fl.jpg";
+        // // 画像をモノクロで出力
+        // File file = iu.Mono(new File(dir));
+        // BufferedImage read = ImageIO.read(file);
+        // int colorF[][] = extrColorF(intoBlock(read));
 
-        // System.out.println("average ");
-        // for (int i = 0; i < colorF.length; i++) {
-        // System.out.println(colorF[i][0]);
-        // }
-        outputBlock(colorF);
-        paintBlock(colorF);
+        // outputBlock(colorF);
+        // paintBlock(colorF);
         // new dividImage(colorF);
+
+        // ファイルの中の画像で回す
+        int numI = 35;
+        int count = 0;
+        BufferedImage write = new BufferedImage(num * 20, num * 20, BufferedImage.TYPE_INT_RGB);
+        // File file1 = new File("C:\\detectEdge\\searched2\\img (" +
+        // String.valueOf(count + 1) + ").jpg");
+        double width = 200;
+        double hight = 200;
+
+        while (count < numI) {
+            File file1 = new File("C:\\detectEdge\\searched2\\img (" + String.valueOf(count + 1) + ").jpg");
+            // file1 = iu.scaleImage(file1, width, hight);
+            BufferedImage read2 = ImageIO.read(iu.Mono(file1));
+
+            int block[][] = extrColorF(intoBlock(read2));
+            block = mvaveFileter(block);
+            File outputfile = new File(
+                    "C:\\detectEdge\\blockresult\\imgPre" + String.valueOf(count + 1) + "_2" + ".jpg");
+
+            write = outputBlock(block);
+            // ImageIO.write(write, "jpg", outputfile);
+
+            write = iu.outputResult(read2, write);
+
+            write = iu.outputResult(write, paintBlock(block));
+            // outputfile = new File(("C:\\detectEdge\\blockresult\\img" +
+            // String.valueOf(count + 1) + ".jpg"));
+            ImageIO.write(write, "jpg", outputfile);
+
+            System.out.println("filename is " + count + ".jpg");
+            count++;
+
+        }
 
     }
 
@@ -98,7 +130,7 @@ public class dividImage extends JFrame {
             }
             // System.out.println();
         }
-        File file = new File("bockImagefl.jpg");
+        File file = new File("C://detectEdge//resultbockImagefl.jpg");
         ImageIO.write(output, "jpg", file);
 
         return output;
@@ -124,16 +156,16 @@ public class dividImage extends JFrame {
             } else {
                 resultBlock[i] = -1;
             }
-            System.out.print(resultBlock[i]);
+            // System.out.print(resultBlock[i]);
         }
-        System.out.println();
+        // System.out.println();
         return resultBlock;
     }
 
     /**
-     * aveBlockから得られた配列を基に画像を1, -1で塗分け
+     * aveBlockから得られた配列を基に画像を1, -1で塗分け, BufferedImageを返却
      */
-    public static void paintBlock(int[][] block) throws IOException {
+    public static BufferedImage paintBlock(int[][] block) throws IOException {
         int[] resultBlock = aveBlock(block);
         int bsize = 20;
         int numB = 0;
@@ -144,20 +176,47 @@ public class dividImage extends JFrame {
                 numB = (int) (i / (bsize)) * num + (int) (j / (bsize));
                 if (resultBlock[numB] == 1) {
                     output.setRGB(j, i, iu.argb(0, 0, 0, 0));
-                    System.out.print("k" + numB);
+                    // System.out.print("k" + numB);
                 } else {
                     output.setRGB(j, i, iu.argb(0, 255, 255, 255));
-                    System.out.print("w" + numB);
+                    // System.out.print("w" + numB);
                 }
 
             }
-            System.out.println();
+            // System.out.println();
         }
-        File file = new File("bockImageMono.jpg");
+        File file = new File("blockImageMono.jpg");
         ImageIO.write(output, "jpg", file);
-
+        return output;
     }
 
+    /**
+     * 移動平均フィルタをかける (dividImgae用) int配列のblockとブロックを引数とする blockであるint配列を返却
+     */
+    public static int[][] mvaveFileter(int[][] block) {
+        int ave = 0;
+        int[][] result = new int[num * num][3];
+        for (int i = 0; i < num; i++) {
+            for (int j = 0; j < num; j++) {
+                if (i == 0 || i == num - 1 || j == 0 || j == num - 1) {
+                    result[i * num + j][0] = block[i * num + j][0];
+                    result[i * num + j][1] = block[i * num + j][1];
+                    result[i * num + j][2] = block[i * num + j][2];
+                } else {
+                    ave = block[(i - 1) * num + j - 1][0] + block[(i - 1) * num + j][0]
+                            + block[(i - 1) * num + j + 1][0] + block[i * num + j - 1][0] + block[i * num + j][0]
+                            + block[i * num + j + 1][0] + block[(i + 1) * num + j - 1][0] + block[(i + 1) * num + j][0]
+                            + block[(i + 1) * num + j + 1][0];
+
+                    result[i * num + j][0] = ave / 9;
+                    result[i * num + j][1] = ave / 9;
+                    result[i * num + j][2] = ave / 9;
+                }
+            }
+        }
+
+        return result;
+    }
     // /**
     // * ブロックを一つの画像として出力 画像サイズは一定
     // */
