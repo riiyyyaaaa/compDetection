@@ -217,6 +217,12 @@ public class dividImage extends JFrame {
 
         return result;
     }
+
+    /**
+     *  一番外側のブロックを削除
+     */
+
+
     // /**
     // * ブロックを一つの画像として出力 画像サイズは一定
     // */
