@@ -10,13 +10,16 @@ import javax.swing.JFrame;
 import java.util.*;
 import javax.swing.JFileChooser;
 
+/**
+ * 画像を縦横num個のブロックに分割。 それらを基に2値で大まかな物体の配置を把握する
+ */
 public class dividImage extends JFrame {
     public static final ImageUtility iu = new ImageUtility();
     public static final int num = 12; // 分割するブロックの数(1辺)
 
     public static void main(String[] args) throws IOException {
         // String dir = "C:\\detectEdge\\fl.jpg";
-        // // 画像をモノクロで出力
+        // 画像をモノクロで出力
         // File file = iu.Mono(new File(dir));
         // BufferedImage read = ImageIO.read(file);
         // int colorF[][] = extrColorF(intoBlock(read));
@@ -136,6 +139,10 @@ public class dividImage extends JFrame {
         return output;
     }
 
+    public static BufferedImage binaryBlock(BuferedImage){
+
+    }
+
     /**
      * ブロックごとの数値から画像全体でのブロックの平均値(モノクロ)を求める 新たな配列ブロックにブロックの値が平均以上であれば1,
      * 平均以下であれば-1としていれていく
@@ -219,9 +226,8 @@ public class dividImage extends JFrame {
     }
 
     /**
-     *  一番外側のブロックを削除
+     * 一番外側のブロックを削除
      */
-
 
     // /**
     // * ブロックを一つの画像として出力 画像サイズは一定

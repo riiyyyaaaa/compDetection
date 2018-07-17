@@ -40,8 +40,7 @@ public class detectEdge {
                 // System.out.println("w, h, w*h, scale:" + w + ", " + h + ", " + w*h + "," +
                 // (double)80000/(h*w));
                 System.out.println("Start Resize");
-                File f2 = iu.scaleImage(f, (double) size / w, (double) size / h);
-                BufferedImage read2 = ImageIO.read(f2);
+                BufferedImage read2 = iu.scaleImage(read, (double) size / w, (double) size / h);
                 System.out.println("\nRGB: " + (int) read2.getRGB(0, 0) + "\n");
                 // System.out.println(read2.getWidth() + ", " + read2.getHeight());
 
@@ -54,6 +53,8 @@ public class detectEdge {
                 BufferedImage writeF = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 
                 writeF = cal.convo(read2, filter);
+
+                File f2 = f;
                 ImageIO.write(writeF, "jpg", f2);
 
                 // detect edge
@@ -94,28 +95,6 @@ public class detectEdge {
 
         }
 
-        /*
-         * //test BufferedImage write = new BufferedImage(100, 100,
-         * BufferedImage.TYPE_INT_RGB); for (int i = 0; i < 100; i++) { for (int j = 0;
-         * j < 100; j++) { int rgb = iu.rgb((int) 50, (int) 50, (int) 50); if (j % 5 ==
-         * 0) { rgb = iu.rgb((int) 50, (int) 50, (int) 50); } else { rgb = iu.rgb(0, 0,
-         * 0); } write.setRGB(j, i, rgb); } } File f2 = new File("test50.jpg");
-         * ImageIO.write(write, "jpg", f2);
-         * 
-         * //test BufferedImage write2 = new BufferedImage(100, 100,
-         * BufferedImage.TYPE_INT_RGB); for (int i = 0; i < 100; i++) { for (int j = 0;
-         * j < 100; j++) { int rgb = iu.rgb((int) 100, (int) 100, (int) 100); if (j % 5
-         * == 0) { rgb = iu.rgb((int) 100, (int) 100, (int) 100); } else { rgb =
-         * iu.rgb(0, 0, 0); } } } File f3 = new File("test100.jpg");
-         * ImageIO.write(write, "jpg", f2);
-         * 
-         * //cal.GaussianFilter(); // Convolution con = new Convolution();
-         * //cal.monoGaussianFilter(f); //cal.firstX(read); //int ro = 1; //double[][]
-         * filter = cal.Gfilter(ro); //write = cal.convo(f, filter); //File f2 = new
-         * File("imgTest3.png"); //ImageIO.write(write, "png", f2);
-         * //l.canny(cal.Mono(f), 1, 100, 50); //cal.specifyPosition(1, 1);
-         * 
-         */
     }
 
 }

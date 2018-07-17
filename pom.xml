@@ -59,7 +59,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.compDetection.testOp</mainClass>
+                            <mainClass>com.compDetection.texGLCM</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

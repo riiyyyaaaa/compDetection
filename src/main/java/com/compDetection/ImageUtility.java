@@ -13,7 +13,6 @@ import java.awt.Graphics2D;
 import javax.swing.JFileChooser;
 
 import java.io.File;
-import javax.imageio.*;
 import java.awt.*;
 
 public class ImageUtility {
@@ -45,14 +44,14 @@ public class ImageUtility {
         return a << 24 | r << 16 | g << 8 | b;
     }
 
-    // 画像を縮小, scale で x, y のサイズ変更。x : y = 1 : 1
-    public static File scaleImage(File in, double scaleX, double scaleY) throws IOException {
+    /**
+     * 画像の縮小, scaleX, Yには、元画像の何倍かを入れる
+     */
+    public static BufferedImage scaleImage(BufferedImage org, double scaleX, double scaleY) throws IOException {
         // System.out.println("scale is " + scale);
-        BufferedImage org = ImageIO.read(in);
         ImageFilter filter = new AreaAveragingScaleFilter((int) (org.getWidth() * scaleX),
                 (int) (org.getHeight() * scaleY));
-        JFileChooser filechooser = new JFileChooser();
-        String filename = filechooser.getName(in);
+        // JFileChooser filechooser = new JFileChooser();
         ImageProducer p = new FilteredImageSource(org.getSource(), filter);
         java.awt.Image dstImage = Toolkit.getDefaultToolkit().createImage(p);
         // BufferedImage dst = new BufferedImage(dstImage.getWidth(null),
@@ -62,10 +61,8 @@ public class ImageUtility {
         Graphics2D g = dst.createGraphics();
         g.drawImage(dstImage, 0, 0, null);
         g.dispose();
-        File out = new File("C:\\detectEdge\\edgetest", "mono" + filename);
-        ImageIO.write(dst, "jpg", out);
 
-        return out;
+        return dst;
     }
 
     /**
