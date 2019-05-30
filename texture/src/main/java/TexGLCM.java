@@ -436,8 +436,8 @@ public class TexGLCM {
      * @return ある濃度値である座標のList
      */
     public static List<List<Point>> get32Hash(BufferedImage block) {
-        List<List<Point>> lists = new LinkedList<>();
-        List<Point> listPoints = new LinkedList<>();
+        List<List<Point>> lists = new LinkedList();
+        List<Point> listPoints = new LinkedList();
 
         //Point[][] points = new Point[32][];
         int w = block.getWidth();
@@ -475,7 +475,7 @@ public class TexGLCM {
 
                     sumsum ++;
                 } else {
-                    LinkedList<Point> list = new LinkedList<>();
+                    LinkedList<Point> list = new LinkedList();
                     list.add(point);
                     lists.add(color, list);
                    // if(list.size() != lists.get(color).size()){

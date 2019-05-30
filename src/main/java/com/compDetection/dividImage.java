@@ -138,10 +138,10 @@ public class dividImage extends JFrame {
 
         return output;
     }
-
-    public static BufferedImage binaryBlock(BuferedImage){
-
-    }
+//
+//    public static BufferedImage binaryBlock(BuferedImage){
+//
+//    }
 
     /**
      * ブロックごとの数値から画像全体でのブロックの平均値(モノクロ)を求める 新たな配列ブロックにブロックの値が平均以上であれば1,

@@ -50,7 +50,7 @@ public class ImageUtility {
         ImageFilter filter = new AreaAveragingScaleFilter(resizeX, resizeY);
         // JFileChooser filechooser = new JFileChooser();
         ImageProducer p = new FilteredImageSource(org.getSource(), filter);
-        java.awt.Image dstImage = Toolkit.getDefaultToolkit().createImage(p);
+        Image dstImage = Toolkit.getDefaultToolkit().createImage(p);
         // BufferedImage dst = new BufferedImage(dstImage.getWidth(null),
         // dstImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
         BufferedImage dst = new BufferedImage(dstImage.getWidth(null), dstImage.getHeight(null),
